@@ -1,0 +1,41 @@
+# JWT 설정
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-validity-in-minutes: 1440  # 24시간
+  refresh-token-validity-in-days: 30
+
+# Swagger 설정
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  show-actuator: true
+  use-management-port: false
+
+encryption:
+  key: ${ENCRYPTION_KEY}
+internal:
+  service:
+    secret: ${INTERNAL_SERVICE_SECRET}
+
+ci:
+  default:
+    token: ${CI_DEFAULT_TOKEN}
+
+# AI 서버 설정
+ai:
+  server:
+    url: ${SERVER_URL}:${AI_SERVER_PORT}
+
+# 통합 서비스 URL 설정
+integration:
+  bank:
+    url: ${SERVER_URL}:${BANK_SERVICE_PORT}
+  card:
+    url: ${SERVER_URL}:${CARD_SERVICE_PORT}

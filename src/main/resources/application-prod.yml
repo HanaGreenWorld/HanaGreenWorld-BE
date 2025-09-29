@@ -1,0 +1,31 @@
+# 프로덕션 환경 설정
+spring:
+  data:
+    redis:
+#      host: ${REDISHOST}
+#      port: ${REDISPORT}
+#      password: ${REDIS_PASSWORD}
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+# 프로덕션 환경 로깅 설정
+logging:
+  level:
+    com.kopo.hanagreenworld: INFO
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    org.springframework.data.redis: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# 프로덕션 환경 자동 로그인 비활성화
+app:
+  dev:
+    auto-login:
+      enabled: false
