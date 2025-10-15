@@ -42,17 +42,19 @@ public class Member extends DateTimeEntity {
     @Column(nullable = false)
     private MemberStatus status = MemberStatus.ACTIVE;
 
+    @Column(name = "ci", unique = true, length = 50)
+    private String ci;
+
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private MemberProfile memberProfile;
 
-    // 편의 메서드 추가
     public Long getId() {
         return this.memberId;
     }
 
     @Builder
-    public Member(String loginId, String email, String password, String name, String phoneNumber, MemberRole role, MemberStatus status) {
+    public Member(String loginId, String email, String password, String name, String phoneNumber, MemberRole role, MemberStatus status, String ci) {
         this.loginId = loginId;
         this.email = email;
         this.password = password;
@@ -60,6 +62,7 @@ public class Member extends DateTimeEntity {
         this.phoneNumber = phoneNumber;
         this.role = role != null ? role : MemberRole.USER;
         this.status = status != null ? status : MemberStatus.ACTIVE;
+        this.ci = ci;
     }
 
     public void encodePassword(PasswordEncoder passwordEncoder) {
@@ -70,11 +73,11 @@ public class Member extends DateTimeEntity {
         return passwordEncoder.matches(rawPassword, this.password);
     }
 
-    public enum MemberRole {
-        USER, ADMIN
+    public void setCi(String ci) {
+        this.ci = ci;
     }
 
-    public enum MemberStatus {
-        ACTIVE, INACTIVE, SUSPENDED
+    public enum MemberRole {
+        USER, ADMIN
     }
 }
