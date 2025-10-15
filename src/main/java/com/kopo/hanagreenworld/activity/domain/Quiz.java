@@ -1,7 +1,7 @@
 package com.kopo.hanagreenworld.activity.domain;
 
 import jakarta.persistence.*;
-
+import java.time.LocalDate;
 import com.kopo.hanagreenworld.common.domain.DateTimeEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -36,13 +36,25 @@ public class Quiz extends DateTimeEntity {
     @Column(name = "points_reward", nullable = false)
     private Integer pointsReward;
 
+    @Column(name = "quiz_date")
+    private LocalDate quizDate;
+
+    @Column(name = "topic", length = 100)
+    private String topic;
+
+    @Column(name = "difficulty", length = 20)
+    private String difficulty;
+
     @Builder
     public Quiz(String question, String options, Integer correctAnswer, String explanation, 
-               Integer pointsReward) {
+               Integer pointsReward, LocalDate quizDate, String topic, String difficulty) {
         this.question = question;
         this.options = options;
         this.correctAnswer = correctAnswer;
         this.explanation = explanation;
         this.pointsReward = pointsReward;
+        this.quizDate = quizDate;
+        this.topic = topic;
+        this.difficulty = difficulty;
     }
 }

@@ -39,13 +39,10 @@ public class QuizService {
             throw new BusinessException(ErrorCode.QUIZ_ALREADY_ATTEMPTED);
         }
 
-        // 랜덤 퀴즈 반환
-        return quizRepository.findRandomQuiz()
-                .orElseGet(() -> {
-                    // 퀴즈가 없으면 새로 생성
-                    Quiz newQuiz = quizGeneratorService.generateEnvironmentQuiz();
-                    return quizRepository.save(newQuiz);
-                });
+        // 오늘의 일일 퀴즈 반환
+        LocalDate todayDate = LocalDate.now();
+        return quizRepository.findByQuizDate(todayDate)
+                .orElseThrow(() -> new BusinessException(ErrorCode.QUIZ_GENERATION_FAILED));
     }
 
     @Transactional(readOnly = true)
@@ -98,7 +95,7 @@ public class QuizService {
             EcoSeedEarnRequest pointRequest = EcoSeedEarnRequest.builder()
                     .category(PointCategory.DAILY_QUIZ)
                     .pointsAmount(totalReward)
-                    .description("환경 퀴즈 정답 (연속 " + streak + "회)")
+                    .description("환경 퀴즈 정답")
                     .build();
 
             ecoSeedService.earnEcoSeeds(pointRequest);

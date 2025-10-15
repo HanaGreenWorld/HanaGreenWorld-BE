@@ -14,8 +14,11 @@ public interface QuizRecordRepository extends JpaRepository<QuizRecord, Long> {
     // 특정 회원의 특정 기간 퀴즈 참여 여부 확인
     boolean existsByMember_MemberIdAndActivityDateBetween(Long memberId, LocalDateTime start, LocalDateTime end);
     
-    // 특정 회원의 특정 기간 퀴즈 결과 조회
+    // 특정 회원의 특정 기간 퀴즈 결과 조회 (단일 결과)
     Optional<QuizRecord> findByMember_MemberIdAndActivityDateBetween(Long memberId, LocalDateTime start, LocalDateTime end);
+    
+    // 특정 회원의 특정 기간 퀴즈 결과 조회 (복수 결과)
+    List<QuizRecord> findByMember_MemberIdAndActivityDateBetweenOrderByActivityDateDesc(Long memberId, LocalDateTime start, LocalDateTime end);
     
     // 특정 회원의 모든 퀴즈 기록 조회
     List<QuizRecord> findByMember_MemberIdOrderByActivityDateDesc(Long memberId);
