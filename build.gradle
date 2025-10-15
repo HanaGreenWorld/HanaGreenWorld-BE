@@ -67,6 +67,9 @@ dependencies {
 	implementation 'org.webjars:stomp-websocket:2.3.4'
 
 	implementation 'io.netty:netty-resolver-dns-native-macos:4.1.101.Final:osx-aarch_64'
+	
+	// EXIF 메타데이터 처리
+	implementation 'com.drewnoakes:metadata-extractor:2.18.0'
 }
 
 tasks.named('test') {
