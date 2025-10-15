@@ -22,12 +22,12 @@ public class TeamResponse {
     private Integer rank;
     private Integer members;
     private String owner;
+    private Boolean isLeader;
     private String createdAt;
     private String inviteCode;
     private String currentChallenge;
     private Long totalSeeds;
     private Double carbonSavedKg;
-    private List<EmblemResponse> emblems;
     private TeamStatsResponse stats;
 
     @Getter
@@ -48,14 +48,15 @@ public class TeamResponse {
         private Long totalPoints;
         private Integer monthlyRank;
         private Integer totalRank;
-        private Long carbonSavedKg;
+        private Double carbonSavedKg;
+        private Double monthlyCarbonSaved;
         private Integer activeMembers;
         private Integer completedChallengesThisMonth;
     }
 
-    public static TeamResponse from(Team team, TeamStatsResponse stats, List<EmblemResponse> emblems, 
+    public static TeamResponse from(Team team, TeamStatsResponse stats,
                                    Member leader, Challenge currentChallenge, Integer completedChallenges) {
-        return TeamResponse.builder()
+        TeamResponse result = TeamResponse.builder()
                 .id(team.getId())
                 .name(team.getTeamName())
                 .slogan(team.getDescription())
@@ -63,14 +64,16 @@ public class TeamResponse {
                 .rank(stats.getMonthlyRank())
                 .members(stats.getActiveMembers())
                 .owner(leader != null ? leader.getName() : "알 수 없음")
+                .isLeader(false)
                 .createdAt(team.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy년 M월 d일")))
                 .inviteCode(generateInviteCode(team.getId()))
                 .currentChallenge(currentChallenge != null ? currentChallenge.getTitle() : "진행 중인 챌린지 없음")
                 .totalSeeds(stats.getTotalPoints())
-                .carbonSavedKg(stats.getCarbonSavedKg().doubleValue())
-                .emblems(emblems)
+                .carbonSavedKg(stats.getCarbonSavedKg())
                 .stats(stats)
                 .build();
+
+        return result;
     }
     
     private static String generateInviteCode(Long teamId) {

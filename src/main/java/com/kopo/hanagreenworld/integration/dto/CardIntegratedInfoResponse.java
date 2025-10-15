@@ -8,39 +8,20 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 카드 통합 정보 응답 DTO
- * 카드 목록, 거래내역, 소비현황을 한 번에 제공
- */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CardIntegratedInfoResponse {
-    
-    /**
-     * 카드 목록 정보
-     */
+
     private CardListInfo cardList;
-    
-    /**
-     * 카드 거래내역
-     */
+
     private List<CardTransactionResponse> transactions;
-    
-    /**
-     * 월간 소비현황
-     */
+
     private CardConsumptionSummaryResponse consumptionSummary;
-    
-    /**
-     * 친환경 혜택 정보
-     */
+
     private Map<String, Object> ecoBenefits;
-    
-    /**
-     * 카드 목록 정보 내부 클래스
-     */
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -52,14 +33,10 @@ public class CardIntegratedInfoResponse {
         private Long availableLimit;
         private String primaryCardName;
         private String primaryCardType;
-        
-        // 실제 카드 목록 추가 💳
+
         private List<CardDetail> cards;
     }
-    
-    /**
-     * 개별 카드 상세 정보
-     */
+
     @Data
     @Builder
     @NoArgsConstructor

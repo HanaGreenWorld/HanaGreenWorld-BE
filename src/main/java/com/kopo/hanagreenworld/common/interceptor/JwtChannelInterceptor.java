@@ -21,9 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/**
- * WebSocket STOMP 메시지에서 JWT 토큰을 처리하는 인터셉터
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -37,20 +34,20 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
         
         if (accessor != null) {
-            log.info("🔍 STOMP 메시지 처리: Command = {}, Destination = {}, SessionId = {}", 
+            log.info("STOMP 메시지 처리: Command = {}, Destination = {}, SessionId = {}",
                 accessor.getCommand(), accessor.getDestination(), accessor.getSessionId());
             
             if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-                log.info("🔗 CONNECT 명령 처리 시작");
+                log.info("CONNECT 명령 처리 시작");
                 // CONNECT 시 JWT 토큰으로 인증하고 세션에 저장
                 handleConnect(accessor);
             } else if (StompCommand.SEND.equals(accessor.getCommand())) {
-                log.info("📤 SEND 명령 처리 시작");
+                log.info("SEND 명령 처리 시작");
                 // SEND 시 세션에서 인증 정보 복원
                 handleSend(accessor);
             }
         } else {
-            log.warn("⚠️ StompHeaderAccessor가 null입니다!");
+            log.warn("⚠StompHeaderAccessor가 null입니다!");
         }
         
         return message;
@@ -104,9 +101,6 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
         }
     }
 
-    /**
-     * SEND 명령 처리: 세션에서 인증 정보 복원
-     */
     private void handleSend(StompHeaderAccessor accessor) {
         String sessionId = accessor.getSessionId();
         
@@ -137,9 +131,6 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
         }
     }
 
-    /**
-     * 토큰으로 직접 인증 처리 (SEND 시 fallback)
-     */
     private void handleTokenAuthentication(StompHeaderAccessor accessor, String token) {
         if (jwtUtil.validateToken(token)) {
             try {
@@ -169,9 +160,6 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
         }
     }
 
-    /**
-     * STOMP 헤더에서 JWT 토큰 추출
-     */
     private String getTokenFromHeaders(StompHeaderAccessor accessor) {
         // Authorization 헤더에서 토큰 추출
         List<String> authHeaders = accessor.getNativeHeader("Authorization");

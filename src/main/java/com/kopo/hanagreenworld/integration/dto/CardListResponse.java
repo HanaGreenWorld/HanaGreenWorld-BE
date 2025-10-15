@@ -9,9 +9,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * 카드 목록 조회 응답 DTO
- */
 @Getter
 @Builder
 @NoArgsConstructor
@@ -52,12 +49,3 @@ public class CardListResponse {
         private String primaryCardType;
     }
 }
-
-
-
-
-
-
-
-
-

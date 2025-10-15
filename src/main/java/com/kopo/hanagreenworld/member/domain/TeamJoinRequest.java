@@ -29,9 +29,6 @@ public class TeamJoinRequest {
     @Column(name = "user_id", nullable = false)
     private Long userId;
     
-    @Column(name = "message", length = 100)
-    private String message;
-    
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     @Builder.Default

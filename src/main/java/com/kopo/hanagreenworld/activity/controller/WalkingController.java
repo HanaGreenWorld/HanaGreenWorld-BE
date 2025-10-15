@@ -5,7 +5,7 @@ import com.kopo.hanagreenworld.activity.dto.WalkingConsentResponse;
 import com.kopo.hanagreenworld.activity.dto.WalkingStepsRequest;
 import com.kopo.hanagreenworld.activity.dto.WalkingResponse;
 import com.kopo.hanagreenworld.activity.service.WalkingService;
-import com.kopo.hanagreenworld.common.response.ApiResponse;
+import com.kopo.hanagreenworld.common.dto.ApiResponse;
 import com.kopo.hanagreenworld.common.util.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +28,7 @@ public class WalkingController {
     public ResponseEntity<ApiResponse<WalkingConsentResponse>> getWalkingConsent() {
         Long memberId = SecurityUtil.getCurrentMemberId();
         WalkingConsentResponse response = walkingService.getWalkingConsent(memberId);
-        return ResponseEntity.ok(ApiResponse.success(response, response.getMessage()));
+        return ResponseEntity.ok(ApiResponse.success(response.getMessage(), response));
     }
 
     @Operation(summary = "걷기 측정 동의 상태 업데이트", description = "걷기 측정 동의 상태를 업데이트합니다.")
@@ -37,7 +37,7 @@ public class WalkingController {
             @RequestBody WalkingConsentRequest request) {
         Long memberId = SecurityUtil.getCurrentMemberId();
         WalkingConsentResponse response = walkingService.updateWalkingConsent(memberId, request);
-        return ResponseEntity.ok(ApiResponse.success(response, response.getMessage()));
+        return ResponseEntity.ok(ApiResponse.success(response.getMessage(), response));
     }
 
     @Operation(summary = "걸음수 제출", description = "걸음수를 제출하고 포인트를 적립합니다.")
@@ -46,7 +46,7 @@ public class WalkingController {
             @RequestBody WalkingStepsRequest request) {
         Long memberId = SecurityUtil.getCurrentMemberId();
         WalkingResponse response = walkingService.submitWalkingSteps(memberId, request);
-        return ResponseEntity.ok(ApiResponse.success(response, response.getMessage()));
+        return ResponseEntity.ok(ApiResponse.success(response.getMessage(), response));
     }
 
     @Operation(summary = "오늘의 걷기 기록 조회", description = "오늘 제출한 걷기 기록을 조회합니다.")
@@ -54,7 +54,7 @@ public class WalkingController {
     public ResponseEntity<ApiResponse<WalkingResponse>> getTodayWalkingRecord() {
         Long memberId = SecurityUtil.getCurrentMemberId();
         WalkingResponse response = walkingService.getTodayWalkingRecord(memberId);
-        return ResponseEntity.ok(ApiResponse.success(response, response.getMessage()));
+        return ResponseEntity.ok(ApiResponse.success(response.getMessage(), response));
     }
 
     @Operation(summary = "월간 걷기 통계 조회", description = "특정 월의 걷기 통계를 조회합니다.")
@@ -63,7 +63,7 @@ public class WalkingController {
             @PathVariable int year, @PathVariable int month) {
         Long memberId = SecurityUtil.getCurrentMemberId();
         Object[] stats = walkingService.getMonthlyWalkingStats(memberId, year, month);
-        return ResponseEntity.ok(ApiResponse.success(stats, "월간 걷기 통계를 조회했습니다."));
+        return ResponseEntity.ok(ApiResponse.success("월간 걷기 통계를 조회했습니다.", stats));
     }
 
     @Operation(summary = "연속 걷기 일수 조회", description = "현재 연속으로 걷기 활동을 한 일수를 조회합니다.")
@@ -71,7 +71,7 @@ public class WalkingController {
     public ResponseEntity<ApiResponse<Integer>> getWalkingStreak() {
         Long memberId = SecurityUtil.getCurrentMemberId();
         Integer streak = walkingService.getWalkingStreak(memberId);
-        return ResponseEntity.ok(ApiResponse.success(streak, "연속 걷기 일수를 조회했습니다."));
+        return ResponseEntity.ok(ApiResponse.success("연속 걷기 일수를 조회했습니다.", streak));
     }
 
     @Operation(summary = "최근 걷기 기록 조회", description = "사용자의 최근 걷기 기록 5개를 조회합니다.")
@@ -79,7 +79,7 @@ public class WalkingController {
     public ResponseEntity<ApiResponse<List<WalkingResponse>>> getRecentWalkingRecords() {
         Long memberId = SecurityUtil.getCurrentMemberId();
         List<WalkingResponse> records = walkingService.getRecentWalkingRecords(memberId, 5);
-        return ResponseEntity.ok(ApiResponse.success(records, "최근 걷기 기록을 조회했습니다."));
+        return ResponseEntity.ok(ApiResponse.success("최근 걷기 기록을 조회했습니다.", records));
     }
 
     @Operation(summary = "걷기 컨트롤러 헬스체크", description = "걷기 컨트롤러가 정상적으로 작동하는지 확인합니다.")

@@ -27,16 +27,13 @@ public class MemberProfile extends DateTimeEntity {
     @Column
     private String nickname;
 
-    // 레벨은 단순 enum으로 관리 (테이블 불필요)
     @Enumerated(EnumType.STRING)
     @Column(name = "eco_level", length = 20)
     private EcoLevel ecoLevel = EcoLevel.BEGINNER;
 
-    // 현재 보유 포인트 (필수 - 실시간 조회 성능을 위해 유지)
     @Column(name = "current_points")
     private Long currentPoints = 0L;
 
-    // 환경 관련 통계 (point_transactions와 별개)
     @Column(name = "total_carbon_saved")
     private Double totalCarbonSaved = 0.0;
 
@@ -49,8 +46,6 @@ public class MemberProfile extends DateTimeEntity {
     @Column(name = "current_month_activities_count")
     private Integer currentMonthActivitiesCount = 0;
 
-
-    // 걷기 관련 컬럼 추가
     @Column(name = "walking_consent")
     private Boolean walkingConsent = false;
 
@@ -65,9 +60,9 @@ public class MemberProfile extends DateTimeEntity {
 
     // 레벨 enum 정의
     public enum EcoLevel {
-        BEGINNER("친환경 새내기", 0L, 1000L),
-        INTERMEDIATE("친환경 실천가", 1000L, 5000L),
-        EXPERT("친환경 전문가", 5000L, null);
+        BEGINNER("친환경 새내기", 0L, 5000L),
+        INTERMEDIATE("친환경 실천가", 5000L, 10000L),
+        EXPERT("친환경 전문가", 10000L, null);
 
         private final String displayName;
         private final Long minPoints;
@@ -82,7 +77,21 @@ public class MemberProfile extends DateTimeEntity {
         public String getDisplayName() { return displayName; }
         public Long getMinPoints() { return minPoints; }
         public Long getMaxPoints() { return maxPoints; }
-        public Long getRequiredPoints() { return maxPoints != null ? maxPoints : Long.MAX_VALUE; }
+        public Long getRequiredPoints() {
+            return maxPoints != null ? maxPoints : 0L; 
+        }
+
+        public int getLevelNumber() {
+            return switch (this) {
+                case BEGINNER -> 1;
+                case INTERMEDIATE -> 2;
+                case EXPERT -> 3;
+            };
+        }
+
+        public String getFormattedDisplayName() {
+            return String.format("Lv%d. %s", getLevelNumber(), displayName);
+        }
     }
 
     @Builder
@@ -92,7 +101,6 @@ public class MemberProfile extends DateTimeEntity {
         this.ecoLevel = ecoLevel != null ? ecoLevel : EcoLevel.BEGINNER;
     }
 
-    // 계산 메서드들
     public EcoLevel getNextLevel() {
         return switch (this.ecoLevel) {
             case BEGINNER -> EcoLevel.INTERMEDIATE;
@@ -128,7 +136,6 @@ public class MemberProfile extends DateTimeEntity {
         this.ecoLevel = ecoLevel;
     }
 
-    // 포인트 업데이트 (현재 보유만 관리, 총적립/총사용은 point_transactions에서 계산)
     public void updateCurrentPoints(Long points) {
         this.currentPoints += points;
     }

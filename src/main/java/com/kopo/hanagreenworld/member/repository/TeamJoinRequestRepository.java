@@ -2,8 +2,6 @@ package com.kopo.hanagreenworld.member.repository;
 
 import com.kopo.hanagreenworld.member.domain.TeamJoinRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,11 +18,12 @@ public interface TeamJoinRequestRepository extends JpaRepository<TeamJoinRequest
     
     // 특정 사용자의 모든 가입 신청 조회
     List<TeamJoinRequest> findByUserIdOrderByCreatedAtDesc(Long userId);
-    
-    // 특정 팀의 모든 가입 신청 조회 (상태별)
-    @Query("SELECT tjr FROM TeamJoinRequest tjr WHERE tjr.teamId = :teamId ORDER BY tjr.createdAt DESC")
-    List<TeamJoinRequest> findByTeamIdOrderByCreatedAtDesc(@Param("teamId") Long teamId);
 }
+
+
+
+
+
 
 
 

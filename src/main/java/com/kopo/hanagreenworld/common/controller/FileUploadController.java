@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,14 +26,17 @@ import java.util.UUID;
 public class FileUploadController {
 
     private static final String UPLOAD_DIR = "challenge_images/";
-    private static final String BASE_URL = "http://192.168.123.5:8080/"; // 실제 서버 URL로 변경 필요
+    
+    @Value("${server.url}")
+    private String serverUrl;
+    
+    @Value("${server.port}")
+    private String serverPort;
 
     @PostMapping("/image")
     @Operation(summary = "이미지 업로드", description = "챌린지 인증용 이미지를 업로드합니다.")
     public ResponseEntity<Map<String, Object>> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
-            log.info("이미지 업로드 요청: {}", file.getOriginalFilename());
-            
             // 업로드 디렉토리 생성
             Path uploadPath = Paths.get(UPLOAD_DIR);
             if (!Files.exists(uploadPath)) {
@@ -47,13 +51,32 @@ public class FileUploadController {
             
             // 파일 저장
             Path filePath = uploadPath.resolve(filename);
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            log.info("파일 저장 경로: {}", filePath.toAbsolutePath());
+            
+            long bytesCopied = Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            log.info("파일 저장 완료: {} bytes 복사됨", bytesCopied);
+            
+            // 저장된 파일 크기 확인
+            long actualFileSize = Files.size(filePath);
+            log.info("실제 저장된 파일 크기: {} bytes", actualFileSize);
             
             // 응답 데이터 생성
+            log.info("서버 URL 설정: serverUrl={}, serverPort={}", serverUrl, serverPort);
+            
+            // 안전한 URL 생성
+            String baseUrl;
+            if (serverUrl != null && serverPort != null) {
+                baseUrl = serverUrl + ":" + serverPort + "/";
+            } else {
+                // 기본값 사용
+                baseUrl = "http://localhost:8080/";
+                log.warn("서버 URL 설정이 없어 기본값 사용: {}", baseUrl);
+            }
+            
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("filename", filename);
-            response.put("url", BASE_URL + "challenge_images/" + filename);
+            response.put("url", baseUrl + "challenge_images/" + filename);
             response.put("localPath", "challenge_images/" + filename);
             response.put("size", file.getSize());
             response.put("contentType", file.getContentType());
@@ -66,6 +89,14 @@ public class FileUploadController {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("error", "파일 업로드 중 오류가 발생했습니다.");
+            errorResponse.put("details", e.getMessage());
+            return ResponseEntity.status(500).body(errorResponse);
+        } catch (Exception e) {
+            log.error("이미지 업로드 중 예상치 못한 오류: {}", e.getMessage(), e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("error", "서버에 문제가 발생하였습니다.");
+            errorResponse.put("details", e.getMessage());
             return ResponseEntity.status(500).body(errorResponse);
         }
     }

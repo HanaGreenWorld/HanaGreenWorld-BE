@@ -10,6 +10,4 @@ import java.util.Optional;
 public interface MemberProfileRepository extends JpaRepository<MemberProfile, Long> {
     
     Optional<MemberProfile> findByMember_MemberId(Long memberId);
-    
-    boolean existsByMember_MemberId(Long memberId);
 }

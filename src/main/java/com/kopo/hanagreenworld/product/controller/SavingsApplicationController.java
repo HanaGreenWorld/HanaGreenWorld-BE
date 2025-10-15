@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.kopo.hanagreenworld.common.response.ApiResponse;
+import com.kopo.hanagreenworld.common.dto.ApiResponse;
 import com.kopo.hanagreenworld.common.util.SecurityUtil;
 import com.kopo.hanagreenworld.product.service.SavingsApplicationService;
 import com.kopo.hanagreenworld.product.service.SavingsApplicationService.SavingsApplicationResponse;
@@ -31,9 +31,6 @@ public class SavingsApplicationController {
     public ResponseEntity<ApiResponse<SavingsApplicationResponse>> createApplication(
             @RequestBody CreateSavingsRequest request) {
         Long userId = SecurityUtil.getCurrentUserId();
-        log.info("적금 가입 신청 요청 - 사용자ID: {}, 상품ID: {}, 출금계좌: {}, 은행: {}, 자동이체: {}",
-                userId, request.getSavingProductId(), request.getWithdrawalAccountNumber(), 
-                request.getWithdrawalBankName(), request.getAutoTransferEnabled());
 
         SavingsApplicationService.CreateSavingsRequest serviceRequest;
         
@@ -60,11 +57,10 @@ public class SavingsApplicationController {
 
         SavingsApplicationResponse response = savingsApplicationService.processSavingsApplication(userId, serviceRequest);
 
-        return ResponseEntity.ok(ApiResponse.success(response, "적금 계좌가 성공적으로 생성되었습니다."));
+        return ResponseEntity.ok(ApiResponse.success("적금 계좌가 성공적으로 생성되었습니다.", response));
     }
 
 
-    // 요청 DTO 클래스
     public static class CreateSavingsRequest {
         private Long savingProductId;
         private BigInteger applicationAmount;
@@ -76,7 +72,6 @@ public class SavingsApplicationController {
         private Integer transferDay;
         private Long monthlyTransferAmount;
 
-        // Getters and Setters
         public Long getSavingProductId() { return savingProductId; }
         public void setSavingProductId(Long savingProductId) { this.savingProductId = savingProductId; }
         

@@ -9,9 +9,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * 하나머니 정보 조회 응답 DTO
- */
 @Getter
 @Builder
 @NoArgsConstructor

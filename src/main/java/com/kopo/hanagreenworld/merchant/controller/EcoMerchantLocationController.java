@@ -30,9 +30,7 @@ public class EcoMerchantLocationController {
                description = "사용자 위치 기준으로 반경 내 친환경 가맹점을 검색합니다.")
     public ResponseEntity<List<EcoMerchantLocationDto>> findNearbyMerchants(
             @Valid @RequestBody LocationSearchRequest request) {
-        
-        log.info("주변 가맹점 검색 API 호출: {}", request);
-        
+
         List<EcoMerchantLocationDto> merchants = locationService.findNearbyMerchants(request);
         
         return ResponseEntity.ok(merchants);
@@ -43,9 +41,7 @@ public class EcoMerchantLocationController {
                description = "특정 카테고리의 친환경 가맹점을 검색합니다.")
     public ResponseEntity<List<EcoMerchantLocationDto>> findMerchantsByCategory(
             @PathVariable EcoMerchant.MerchantCategory category) {
-        
-        log.info("카테고리별 가맹점 검색 API 호출: {}", category);
-        
+
         List<EcoMerchantLocationDto> merchants = locationService.findMerchantsByCategory(category);
         
         return ResponseEntity.ok(merchants);
@@ -55,8 +51,6 @@ public class EcoMerchantLocationController {
     @Operation(summary = "검증된 가맹점 조회", 
                description = "검증된 친환경 가맹점만 조회합니다.")
     public ResponseEntity<List<EcoMerchantLocationDto>> findVerifiedMerchants() {
-        
-        log.info("검증된 가맹점 조회 API 호출");
         
         List<EcoMerchantLocationDto> merchants = locationService.findVerifiedMerchants();
         
@@ -69,8 +63,6 @@ public class EcoMerchantLocationController {
     public ResponseEntity<List<EcoMerchantLocationDto>> searchMerchantsByName(
             @RequestParam String keyword) {
         
-        log.info("가맹점명 검색 API 호출: {}", keyword);
-        
         List<EcoMerchantLocationDto> merchants = locationService.searchMerchantsByName(keyword);
         
         return ResponseEntity.ok(merchants);
@@ -81,8 +73,6 @@ public class EcoMerchantLocationController {
                description = "모든 활성화된 친환경 가맹점을 조회합니다.")
     public ResponseEntity<List<EcoMerchantLocationDto>> findAllActiveMerchants() {
         
-        log.info("모든 활성 가맹점 조회 API 호출");
-        
         List<EcoMerchantLocationDto> merchants = locationService.findAllActiveMerchants();
         
         return ResponseEntity.ok(merchants);
@@ -92,8 +82,6 @@ public class EcoMerchantLocationController {
     @Operation(summary = "카테고리 목록 조회", 
                description = "사용 가능한 가맹점 카테고리 목록을 조회합니다.")
     public ResponseEntity<EcoMerchant.MerchantCategory[]> getCategories() {
-        
-        log.info("카테고리 목록 조회 API 호출");
         
         EcoMerchant.MerchantCategory[] categories = EcoMerchant.MerchantCategory.values();
         

@@ -21,6 +21,7 @@ public class TeamRankingResponse {
         private String slogan;
         private Integer rank;
         private Long totalPoints;
+        private Long monthlyPoints;
         private Integer members;
         private String leaderName;
         private String emblemUrl;
@@ -36,7 +37,7 @@ public class TeamRankingResponse {
         private Long monthlyPoints;
         private Long totalPoints;
         private Integer members;
-        private String trend; // "up", "down", "same"
+        private String trend;
         private Integer rankChange;
     }
 

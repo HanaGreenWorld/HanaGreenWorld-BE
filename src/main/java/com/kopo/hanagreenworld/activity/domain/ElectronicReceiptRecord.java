@@ -1,83 +1,62 @@
 package com.kopo.hanagreenworld.activity.domain;
 
-import java.time.LocalDateTime;
-import java.math.BigDecimal;
-import jakarta.persistence.*;
-
 import com.kopo.hanagreenworld.common.domain.DateTimeEntity;
 import com.kopo.hanagreenworld.member.domain.Member;
-
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
+/**
+ * 전자확인증 기록 엔티티
+ * 하나은행에서 받은 전자확인증 정보를 저장
+ */
 @Entity
-@Table(
-    name = "electronic_receipt_records",
-    indexes = {
-        @Index(name = "idx_receipt_member_date", columnList = "member_id, activity_date"),
-    }
-)
+@Table(name = "electronic_receipt_records")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ElectronicReceiptRecord extends DateTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "receipt_id")
-    private Long id;
+    @Column(name = "record_id")
+    private Long recordId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    // 공통 필드
-    @Column(name = "activity_amount", nullable = false)
-    private Long activityAmount; // 전자확인증 건수 (보통 1)
+    @Column(name = "transaction_id", nullable = false, length = 100, unique = true)
+    private String transactionId;
 
-    @Column(name = "carbon_saved", precision = 5, scale = 2, nullable = false)
-    private BigDecimal carbonSaved; // kg
+    @Column(name = "transaction_type", nullable = false, length = 50)
+    private String transactionType;
 
-    @Column(name = "points_awarded", nullable = false)
-    private Integer pointsAwarded;
-
-    @Column(name = "activity_date", nullable = false)
-    private LocalDateTime activityDate;
-
-    // 전자확인증 전용 상세
-    @Column(name = "transaction_id", length = 100)
-    private String transactionId;  // 거래 ID
-
-    @Column(name = "transaction_type", length = 50)
-    private String transactionType;  // 입금, 지급, 만기갱신, 해지 등
-
-    @Column(name = "transaction_amount")
-    private Long transactionAmount;  // 거래 금액
+    @Column(name = "transaction_amount", nullable = false)
+    private Long transactionAmount;
 
     @Column(name = "branch_name", length = 100)
-    private String branchName;  // 영업점명
+    private String branchName;
 
-    @Column(name = "claimed_reward_at")
-    private LocalDateTime claimedRewardAt;
+    @Column(name = "receipt_date", nullable = false)
+    private LocalDateTime receiptDate;
+
+    @Column(name = "points_earned", nullable = false)
+    private Integer pointsEarned = 3; // 전자확인증당 3포인트
 
     @Builder
-    public ElectronicReceiptRecord(Member member, Long activityAmount, BigDecimal carbonSaved, 
-                                 Integer pointsAwarded, LocalDateTime activityDate,
-                                 String transactionId, String transactionType, Long transactionAmount, 
-                                 String branchName, LocalDateTime claimedRewardAt) {
+    public ElectronicReceiptRecord(Member member, String transactionId, String transactionType,
+                                 Long transactionAmount, String branchName, LocalDateTime receiptDate) {
         this.member = member;
-        this.activityAmount = activityAmount;
-        this.carbonSaved = carbonSaved;
-        this.pointsAwarded = pointsAwarded;
-        this.activityDate = activityDate == null ? LocalDateTime.now() : activityDate;
         this.transactionId = transactionId;
         this.transactionType = transactionType;
         this.transactionAmount = transactionAmount;
         this.branchName = branchName;
-        this.claimedRewardAt = claimedRewardAt;
-    }
-
-    public void markClaimed(LocalDateTime when) { 
-        this.claimedRewardAt = when; 
+        this.receiptDate = receiptDate;
+        this.pointsEarned = 3;
     }
 }
+

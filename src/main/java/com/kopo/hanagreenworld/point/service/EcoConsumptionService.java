@@ -1,6 +1,6 @@
 package com.kopo.hanagreenworld.point.service;
 
-import com.kopo.hanagreenworld.integration.service.HanaCardBenefitService;
+import com.kopo.hanagreenworld.merchant.service.EcoMerchantMatchingService;
 import com.kopo.hanagreenworld.point.dto.EcoConsumptionAnalysisResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,14 +16,10 @@ import java.util.ArrayList;
 @RequiredArgsConstructor
 public class EcoConsumptionService {
 
-    private final HanaCardBenefitService hanaCardBenefitService;
+    private final EcoMerchantMatchingService ecoMerchantMatchingService;
 
     public EcoConsumptionAnalysisResponse getEcoConsumptionAnalysis(Long userId) {
-        log.info("친환경 소비 현황 분석 시작: userId = {}", userId);
-        
-        // 실제 구현에서는 데이터베이스에서 사용자의 거래 내역을 조회하여 분석
-        // 현재는 샘플 데이터 반환
-        
+
         // 전체 소비 금액
         Long totalAmount = 1500000L;
         
@@ -114,79 +110,81 @@ public class EcoConsumptionService {
     }
 
     public Map<String, Object> getEcoMerchantBenefits(Long userId) {
-        log.info("친환경 가맹점 혜택 조회 시작: userId = {}", userId);
-        
-        // 실제 구현에서는 데이터베이스에서 사용자의 가맹점 방문 내역을 조회
-        // 현재는 샘플 데이터 반환
-        
-        Map<String, Object> benefits = new HashMap<>();
-        
-        // 총 혜택 금액
-        Long totalBenefits = 45000L;
-        benefits.put("totalBenefits", totalBenefits);
-        
-        // 월별 혜택 내역
-        List<Map<String, Object>> monthlyBenefits = new ArrayList<>();
-        
-        Map<String, Object> currentMonth = new HashMap<>();
-        currentMonth.put("month", "2024-01");
-        currentMonth.put("amount", 15000L);
-        currentMonth.put("count", 8);
-        monthlyBenefits.add(currentMonth);
-        
-        Map<String, Object> lastMonth = new HashMap<>();
-        lastMonth.put("month", "2023-12");
-        lastMonth.put("amount", 18000L);
-        lastMonth.put("count", 12);
-        monthlyBenefits.add(lastMonth);
-        
-        Map<String, Object> twoMonthsAgo = new HashMap<>();
-        twoMonthsAgo.put("month", "2023-11");
-        twoMonthsAgo.put("amount", 12000L);
-        twoMonthsAgo.put("count", 6);
-        monthlyBenefits.add(twoMonthsAgo);
-        
-        benefits.put("monthlyBenefits", monthlyBenefits);
-        
-        // 카테고리별 혜택
-        List<Map<String, Object>> categoryBenefits = new ArrayList<>();
-        
-        Map<String, Object> mobilityBenefit = new HashMap<>();
-        mobilityBenefit.put("category", "모빌리티");
-        mobilityBenefit.put("amount", 20000L);
-        mobilityBenefit.put("count", 15);
-        categoryBenefits.add(mobilityBenefit);
-        
-        Map<String, Object> foodBenefit = new HashMap<>();
-        foodBenefit.put("category", "식품");
-        foodBenefit.put("amount", 15000L);
-        foodBenefit.put("count", 8);
-        categoryBenefits.add(foodBenefit);
-        
-        Map<String, Object> shoppingBenefit = new HashMap<>();
-        shoppingBenefit.put("category", "쇼핑");
-        shoppingBenefit.put("amount", 10000L);
-        shoppingBenefit.put("count", 3);
-        categoryBenefits.add(shoppingBenefit);
-        
-        benefits.put("categoryBenefits", categoryBenefits);
-        
-        log.info("친환경 가맹점 혜택 조회 완료: userId = {}, totalBenefits = {}", userId, totalBenefits);
-        
-        return benefits;
+
+        try {
+            List<Map<String, Object>> ecoMerchantHistory = ecoMerchantMatchingService.getUserEcoMerchantHistory(userId);
+
+            Map<String, Object> stats = ecoMerchantMatchingService.getEcoMerchantStats(userId);
+
+            List<Map<String, Object>> benefitsList = new ArrayList<>();
+            
+            for (Map<String, Object> history : ecoMerchantHistory) {
+                Map<String, Object> benefit = new HashMap<>();
+                benefit.put("storeName", history.get("merchantName"));
+                benefit.put("benefitName", getBenefitNameByCategory((String) history.get("category")));
+                benefit.put("amount", String.format("%,d원", (Long) history.get("amount"))); // 실제 거래 금액 사용
+                benefit.put("date", formatDate((String) history.get("transactionDate")));
+                benefit.put("icon", getIconByCategory((String) history.get("category")));
+                benefit.put("businessNumber", history.get("businessNumber"));
+                benefit.put("originalAmount", history.get("amount"));
+                benefit.put("additionalSeeds", history.get("additionalSeeds"));
+                benefitsList.add(benefit);
+            }
+            
+            Map<String, Object> benefits = new HashMap<>();
+            benefits.put("totalBenefits", stats.get("totalAdditionalSeeds"));
+            benefits.put("benefits", benefitsList);
+            benefits.put("stats", stats);
+
+            return benefits;
+            
+        } catch (Exception e) {
+            log.error("친환경 가맹점 혜택 조회 실패: userId = {}, 에러: {}", userId, e.getMessage(), e);
+            
+            // 에러 시 기본 데이터 반환
+            Map<String, Object> benefits = new HashMap<>();
+            benefits.put("totalBenefits", 0L);
+            benefits.put("benefits", new ArrayList<>());
+            benefits.put("error", e.getMessage());
+            return benefits;
+        }
     }
 
-    public Map<String, Object> getCardBenefitPackages(Long userId) {
-        log.info("카드 혜택 패키지 조회 시작: userId = {}", userId);
-        
-        // 하나카드 API 호출
-        return hanaCardBenefitService.getBenefitPackages(userId);
+    private String getBenefitNameByCategory(String category) {
+        return switch (category) {
+            case "친환경 식품/매장" -> "유기농 식품 구매";
+            case "전기차 충전" -> "전기차 충전";
+            case "재활용/제로웨이스트" -> "친환경 제품 구매";
+            case "친환경 뷰티" -> "천연 화장품 구매";
+            case "친환경 쇼핑" -> "친환경 의류 구매";
+            case "유기농 카페" -> "유기농 음료 주문";
+            default -> "친환경 가맹점 이용";
+        };
     }
 
-    public Map<String, Object> changeBenefitPackage(Long userId, Long cardProductId, String packageCode, String changeReason) {
-        log.info("혜택 패키지 변경 시작: userId = {}, cardProductId = {}, packageCode = {}", userId, cardProductId, packageCode);
-        
-        // 하나카드 API 호출
-        return hanaCardBenefitService.changeBenefitPackage(userId, cardProductId, packageCode, changeReason);
+    private String getIconByCategory(String category) {
+        return switch (category) {
+            case "친환경 식품/매장" -> "eco-store.png";
+            case "전기차 충전" -> "ev-charging.png";
+            case "재활용/제로웨이스트" -> "zero-waste.png";
+            case "친환경 뷰티" -> "green-beauty.png";
+            case "친환경 쇼핑" -> "eco-shopping.png";
+            case "유기농 카페" -> "organic-cafe.png";
+            default -> "eco-default.png";
+        };
+    }
+
+    private String formatDate(String dateStr) {
+        try {
+            String[] parts = dateStr.split("-");
+            if (parts.length >= 3) {
+                int month = Integer.parseInt(parts[1]);
+                int day = Integer.parseInt(parts[2]);
+                return String.format("%d월 %d일", month, day);
+            }
+        } catch (Exception e) {
+            log.warn("날짜 포맷팅 실패: {}", dateStr);
+        }
+        return dateStr;
     }
 }

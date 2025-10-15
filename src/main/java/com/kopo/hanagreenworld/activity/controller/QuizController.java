@@ -5,7 +5,7 @@ import com.kopo.hanagreenworld.activity.domain.QuizRecord;
 import com.kopo.hanagreenworld.activity.dto.QuizAttemptResponse;
 import com.kopo.hanagreenworld.activity.dto.QuizAttemptRequest;
 import com.kopo.hanagreenworld.activity.service.QuizService;
-import com.kopo.hanagreenworld.common.response.ApiResponse;
+import com.kopo.hanagreenworld.common.dto.ApiResponse;
 import com.kopo.hanagreenworld.common.util.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,14 +34,14 @@ public class QuizController {
     public ResponseEntity<ApiResponse<Quiz>> getDailyQuiz() {
         Long memberId = SecurityUtil.getCurrentMemberId();
         Quiz quiz = quizService.getDailyQuiz(memberId);
-        return ResponseEntity.ok(ApiResponse.success(quiz, "오늘의 퀴즈를 조회했습니다."));
+        return ResponseEntity.ok(ApiResponse.success("오늘의 퀴즈를 조회했습니다.", quiz));
     }
 
     @Operation(summary = "오늘의 퀴즈 결과 조회", description = "오늘 참여한 퀴즈의 결과를 조회합니다.")
     @GetMapping("/daily/result")
     public ResponseEntity<ApiResponse<QuizRecord>> getDailyQuizResult() {
         Long memberId = SecurityUtil.getCurrentMemberId();
-        return ResponseEntity.ok(ApiResponse.success(quizService.getTodayQuizResult(memberId), "오늘의 퀴즈 결과를 조회했습니다."));
+        return ResponseEntity.ok(ApiResponse.success("오늘의 퀴즈 결과를 조회했습니다.", quizService.getTodayQuizResult(memberId)));
     }
 
     @Operation(summary = "퀴즈 답변 제출", description = "퀴즈 답변을 제출합니다. 정답인 경우 포인트가 적립됩니다.")
@@ -59,8 +59,8 @@ public class QuizController {
                 .explanation(result.getQuiz().getExplanation())
                 .pointsAwarded(result.getPointsAwarded())
                 .build();
-        return ResponseEntity.ok(ApiResponse.success(dto,
-            result.getIsCorrect() ? "정답입니다! 포인트가 적립되었습니다." : "아쉽네요, 다음 기회에 도전해보세요."));
+        return ResponseEntity.ok(ApiResponse.success(
+            result.getIsCorrect() ? "정답입니다! 포인트가 적립되었습니다." : "아쉽네요, 다음 기회에 도전해보세요.", dto));
     }
 
     @Operation(summary = "퀴즈 참여 이력 조회", description = "사용자의 퀴즈 참여 이력을 조회합니다.")
@@ -68,7 +68,7 @@ public class QuizController {
     public ResponseEntity<ApiResponse<List<QuizRecord>>> getQuizHistory() {
         Long memberId = SecurityUtil.getCurrentMemberId();
         List<QuizRecord> history = quizService.getMemberQuizHistory(memberId);
-        return ResponseEntity.ok(ApiResponse.success(history, "퀴즈 참여 이력을 조회했습니다."));
+        return ResponseEntity.ok(ApiResponse.success("퀴즈 참여 이력을 조회했습니다.", history));
     }
 
     @Operation(summary = "오늘 퀴즈 참여 여부 확인", description = "오늘 퀴즈에 참여했는지 확인합니다.")
@@ -76,7 +76,7 @@ public class QuizController {
     public ResponseEntity<ApiResponse<Boolean>> getTodayQuizParticipationStatus() {
         Long memberId = SecurityUtil.getCurrentMemberId();
         Boolean hasParticipated = quizService.hasParticipatedToday(memberId);
-        return ResponseEntity.ok(ApiResponse.success(hasParticipated, 
-            hasParticipated ? "오늘 퀴즈에 참여했습니다." : "오늘 퀴즈에 참여하지 않았습니다."));
+        return ResponseEntity.ok(ApiResponse.success(
+            hasParticipated ? "오늘 퀴즈에 참여했습니다." : "오늘 퀴즈에 참여하지 않았습니다.", hasParticipated));
     }
 }

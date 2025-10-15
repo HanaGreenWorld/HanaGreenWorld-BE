@@ -126,7 +126,7 @@ public class WalkingService {
             EcoSeedEarnRequest pointRequest = EcoSeedEarnRequest.builder()
                     .category(PointCategory.WALKING)
                     .pointsAmount(points)
-                    .description(request.getSteps() + "걸음으로 원큐씨앗 적립")
+                    .description(request.getSteps() + "걸음")
                     .build();
 
             ecoSeedService.earnEcoSeeds(pointRequest);

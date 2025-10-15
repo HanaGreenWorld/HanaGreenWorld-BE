@@ -2,6 +2,7 @@ package com.kopo.hanagreenworld.common.filter;
 
 import com.kopo.hanagreenworld.common.util.JwtUtil;
 import com.kopo.hanagreenworld.member.domain.Member;
+import com.kopo.hanagreenworld.member.domain.MemberStatus;
 import com.kopo.hanagreenworld.member.repository.MemberRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -40,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     Long memberId = jwtUtil.getMemberIdFromToken(token);
                     Member member = memberRepository.findById(memberId).orElse(null);
 
-                    if (member != null && member.getStatus() == Member.MemberStatus.ACTIVE) {
+                    if (member != null && member.getStatus() == MemberStatus.ACTIVE) {
                         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                                 member,
                                 null,

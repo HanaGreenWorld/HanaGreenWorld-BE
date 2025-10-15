@@ -9,38 +9,20 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * 통합 고객 정보 조회 응답 DTO
- */
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class IntegratedCustomerInfoResponse {
 
-    /**
-     * 고객 기본 정보
-     */
     private CustomerSummary customerSummary;
 
-    /**
-     * 하나은행 정보
-     */
     private BankInfo bankInfo;
 
-    /**
-     * 하나카드 정보
-     */
     private CardInfo cardInfo;
 
-    /**
-     * 통합 혜택 정보
-     */
     private IntegratedBenefits integratedBenefits;
 
-    /**
-     * 응답 생성 시간
-     */
     private LocalDateTime responseTime;
 
     @Getter

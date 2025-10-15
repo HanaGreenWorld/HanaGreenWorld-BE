@@ -9,9 +9,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * 은행 계좌/상품 목록 조회 응답 DTO
- */
 @Getter
 @Builder
 @NoArgsConstructor

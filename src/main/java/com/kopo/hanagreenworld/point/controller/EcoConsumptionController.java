@@ -1,6 +1,5 @@
 package com.kopo.hanagreenworld.point.controller;
 
-import com.kopo.hanagreenworld.common.response.ApiResponse;
 import com.kopo.hanagreenworld.point.service.EcoConsumptionService;
 import com.kopo.hanagreenworld.point.dto.EcoConsumptionAnalysisResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,11 +24,8 @@ public class EcoConsumptionController {
     @Operation(summary = "친환경 소비 현황 조회", description = "사용자의 이번달 친환경 소비 현황을 조회합니다.")
     public ResponseEntity<Map<String, Object>> getEcoConsumptionAnalysis(@PathVariable Long userId) {
         try {
-            log.info("친환경 소비 현황 조회 요청: userId = {}", userId);
-            
             EcoConsumptionAnalysisResponse analysis = ecoConsumptionService.getEcoConsumptionAnalysis(userId);
-            
-            log.info("친환경 소비 현황 조회 성공: userId = {}", userId);
+
             return ResponseEntity.ok(Map.of(
                 "success", true,
                 "data", analysis
@@ -60,11 +56,7 @@ public class EcoConsumptionController {
     @Operation(summary = "이번달 친환경 가맹점 혜택 조회", description = "사용자의 이번달 친환경 가맹점 혜택을 조회합니다.")
     public ResponseEntity<Map<String, Object>> getEcoBenefits(@PathVariable Long userId) {
         try {
-            log.info("친환경 가맹점 혜택 조회 요청: userId = {}", userId);
-            
             Map<String, Object> benefits = ecoConsumptionService.getEcoMerchantBenefits(userId);
-            
-            log.info("친환경 가맹점 혜택 조회 성공: userId = {}", userId);
             return ResponseEntity.ok(Map.of(
                 "success", true,
                 "data", benefits
@@ -91,23 +83,5 @@ public class EcoConsumptionController {
                 "data", defaultBenefits
             ));
         }
-    }
-
-    @GetMapping("/{userId}/benefit-packages")
-    @Operation(summary = "카드 혜택 패키지 조회", description = "사용자의 현재 혜택 패키지와 모든 가능한 혜택 패키지 목록을 조회합니다.")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getCardBenefitPackages(@PathVariable Long userId) {
-        log.info("카드 혜택 패키지 조회 요청: userId = {}", userId);
-        Map<String, Object> packages = ecoConsumptionService.getCardBenefitPackages(userId);
-        return ResponseEntity.ok(ApiResponse.success(packages, "카드 혜택 패키지 조회 성공"));
-    }
-
-    @PostMapping("/{userId}/benefit-packages")
-    @Operation(summary = "혜택 패키지 변경", description = "사용자의 혜택 패키지를 변경합니다.")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> updateUserBenefitPackage(
-            @PathVariable Long userId, 
-            @RequestBody Map<String, String> request) {
-        log.info("혜택 패키지 변경 요청: userId = {}, packageName = {}", userId, request.get("packageName"));
-        Map<String, Object> result = ecoConsumptionService.changeBenefitPackage(userId, 1L, request.get("packageCode"), request.get("changeReason"));
-        return ResponseEntity.ok(ApiResponse.success(result, "혜택 패키지 변경 성공"));
     }
 }
