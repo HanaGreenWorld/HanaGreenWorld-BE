@@ -48,19 +48,47 @@ public class EcoReport extends DateTimeEntity {
 
     // 활동별 비율 (JSON 형태로 저장)
     @Column(name = "activities_data", columnDefinition = "TEXT")
-    private String activitiesData; // [{"label":"걷기","value":45,"color":"#10B981"}, ...]
+    private String activitiesData;
 
     @Column(name = "top_activity", length = 50)
-    private String topActivity; // 가장 많이 한 활동
+    private String topActivity;
 
-    // 추천 상품 (JSON 형태로 저장)
-    @Column(name = "recommendations", columnDefinition = "TEXT")
-    private String recommendations; // [{"id":"rec1","title":"하나green세상 적금",...}, ...]
+    @Column(name = "current_level", length = 20)
+    private String currentLevel;
+
+    @Column(name = "next_level", length = 20)
+    private String nextLevel;
+
+    @Column(name = "level_progress", precision = 5, scale = 2)
+    private BigDecimal levelProgress; // 다음 레벨까지 진행률 (%)
+
+    @Column(name = "points_to_next_level")
+    private Long pointsToNextLevel;
+
+    // 금융 혜택 (JSON 형태로 저장)
+    @Column(name = "financial_benefit", columnDefinition = "TEXT")
+    private String financialBenefit;
+
+    // 사용자 랭킹 정보 (JSON 형태로 저장)
+    @Column(name = "user_ranking", columnDefinition = "TEXT")
+    private String userRanking;
+
+    // 환경 가치 환산 (JSON 형태로 저장)
+    @Column(name = "environmental_impact", columnDefinition = "TEXT")
+    private String environmentalImpact;
+
+    // 차트 기본 표시 타입
+    @Column(name = "data_view_type", length = 10)
+    private String dataViewType = "COUNT"; // "COUNT" or "POINTS"
 
     @Builder
     public EcoReport(Member member, String reportMonth, Long totalSeeds,
                     BigDecimal totalCarbonKg, Integer totalActivities,
-                    String activitiesData, String topActivity, String recommendations) {
+                    String activitiesData, String topActivity,
+                    String currentLevel, String nextLevel, BigDecimal levelProgress,
+                    Long pointsToNextLevel, String financialBenefit,
+                    String userRanking, String environmentalImpact,
+                    String dataViewType) {
         this.member = member;
         this.reportMonth = reportMonth;
         this.totalSeeds = totalSeeds == null ? 0L : totalSeeds;
@@ -68,7 +96,14 @@ public class EcoReport extends DateTimeEntity {
         this.totalActivities = totalActivities == null ? 0 : totalActivities;
         this.activitiesData = activitiesData;
         this.topActivity = topActivity;
-        this.recommendations = recommendations;
+        this.currentLevel = currentLevel;
+        this.nextLevel = nextLevel;
+        this.levelProgress = levelProgress;
+        this.pointsToNextLevel = pointsToNextLevel;
+        this.financialBenefit = financialBenefit;
+        this.userRanking = userRanking;
+        this.environmentalImpact = environmentalImpact;
+        this.dataViewType = dataViewType == null ? "COUNT" : dataViewType;
     }
 
     public void updateStats(Long seeds, BigDecimal carbonKg, Integer activities) {
@@ -85,7 +120,26 @@ public class EcoReport extends DateTimeEntity {
         this.topActivity = topActivity;
     }
 
-    public void updateRecommendations(String recommendations) {
-        this.recommendations = recommendations;
+    public void updateLevelInfo(String currentLevel, String nextLevel, BigDecimal levelProgress, Long pointsToNextLevel) {
+        this.currentLevel = currentLevel;
+        this.nextLevel = nextLevel;
+        this.levelProgress = levelProgress;
+        this.pointsToNextLevel = pointsToNextLevel;
+    }
+
+    public void updateFinancialBenefit(String financialBenefit) {
+        this.financialBenefit = financialBenefit;
+    }
+
+    public void updateUserRanking(String userRanking) {
+        this.userRanking = userRanking;
+    }
+
+    public void updateEnvironmentalImpact(String environmentalImpact) {
+        this.environmentalImpact = environmentalImpact;
+    }
+
+    public void updateDataViewType(String dataViewType) {
+        this.dataViewType = dataViewType;
     }
 }
