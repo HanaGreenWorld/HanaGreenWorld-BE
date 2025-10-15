@@ -1,6 +1,7 @@
 package com.kopo.hanagreenworld.point.repository;
 
 import com.kopo.hanagreenworld.point.domain.PointTransaction;
+import com.kopo.hanagreenworld.point.domain.PointTransactionType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,8 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
-
+import java.util.Optional;
 @Repository
 public interface PointTransactionRepository extends JpaRepository<PointTransaction, Long> {
     
@@ -54,4 +56,18 @@ public interface PointTransactionRepository extends JpaRepository<PointTransacti
            "WHERE mt.team.id = :teamId AND mt.isActive = true " +
            "AND pt.pointTransactionType = 'EARN'")
     Long findTotalTeamPoints(@Param("teamId") Long teamId);
-}
+    
+    // 달력용: 특정 기간의 거래 내역 조회
+    List<PointTransaction> findByMember_MemberIdAndPointTransactionTypeAndOccurredAtBetween(
+            Long memberId, 
+            PointTransactionType pointTransactionType, 
+            LocalDateTime startDate, 
+            LocalDateTime endDate);
+    // 중복 확인을 위한 메서드
+    Optional<PointTransaction> findByMember_MemberIdAndDescriptionContaining(Long memberId, String description);
+    
+    // 사용자별 총 원큐씨앗 조회 (친환경 가맹점 매칭용)
+    @Query("SELECT COALESCE(SUM(pt.pointsAmount), 0) FROM PointTransaction pt " +
+        "WHERE pt.member.memberId = :userId AND pt.pointTransactionType = 'EARN'")
+    Long findTotalSeedsByUserId(@Param("userId") Long userId);
+}    
