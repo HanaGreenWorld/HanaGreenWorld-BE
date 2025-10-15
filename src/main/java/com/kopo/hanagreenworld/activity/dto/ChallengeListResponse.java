@@ -4,6 +4,8 @@ import com.kopo.hanagreenworld.activity.domain.Challenge;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Builder
 public class ChallengeListResponse {
@@ -23,6 +25,12 @@ public class ChallengeListResponse {
     private String note;
     private Boolean isParticipated;
     private String participationStatus;
+    
+    // 챌린지 기간 정보
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    private Boolean isCurrentlyActive;
+    private String periodStatus; // "UPCOMING", "ACTIVE", "ENDED"
 
     public static ChallengeListResponse from(Challenge challenge, Boolean isParticipated, String participationStatus) {
         return ChallengeListResponse.builder()
@@ -42,6 +50,10 @@ public class ChallengeListResponse {
                 .note(getNote(challenge.getCode()))
                 .isParticipated(isParticipated)
                 .participationStatus(participationStatus)
+                .startDate(challenge.getStartDate())
+                .endDate(challenge.getEndDate())
+                .isCurrentlyActive(challenge.isCurrentlyActive())
+                .periodStatus(getPeriodStatus(challenge))
                 .build();
     }
 
@@ -72,22 +84,22 @@ public class ChallengeListResponse {
         switch (code) {
             case REUSABLE_BAG:
             case REUSABLE_BAG_EXTENDED:
-                return "마트나 시장에서 비닐봉투 대신 장바구니 사용하기. 🛒👜";
+                return "마트나 시장에서 비닐봉투 대신 장바구니 사용하기";
             case PLUGGING:
             case PLUGGING_MARATHON:
             case TEAM_PLUGGING:
-                return "팀원들과 동네를 걸으며/뛰며 쓰레기 줍기. 🏃‍♀️🗑️";
+                return "팀원들과 동네를 걸으며/뛰며 쓰레기 줍기";
             case WEEKLY_STEPS:
             case TEAM_WALKING:
-                return "팀원들의 1주일 걸음 수를 합산해 가장 높은 팀에 보상. 👣🏆";
+                return "팀원들의 1주일 걸음 수를 합산해 가장 높은 팀에 보상";
             case DAILY_STEPS:
-                return "하루 만보 걷기로 건강과 환경을 동시에. 👣💚";
+                return "하루 만보 걷기로 건강과 환경을 동시에";
             case NO_PLASTIC:
-                return "외출 시 개인 텀블러/리유저블 컵을 사용해요. ☕️🌍";
+                return "외출 시 개인 텀블러/리유저블 컵을 사용해요";
             case TUMBLER_CHALLENGE:
-                return "개인 텀블러로 환경을 지키는 챌린지. ☕️♻️";
+                return "개인 텀블러로 환경을 지키는 챌린지";
             case RECYCLE:
-                return "플라스틱, 캔, 종이 등 재활용품을 깨끗이 비우고 라벨 제거 후 분리배출. ♻️";
+                return "플라스틱, 캔, 종이 등 재활용품을 깨끗이 비우고 라벨 제거 후 분리배출";
             default:
                 return "";
         }
@@ -181,6 +193,20 @@ public class ChallengeListResponse {
                 return "물로 헹군 후 배출하면 인식률이 높아요";
             default:
                 return "";
+        }
+    }
+
+    private static String getPeriodStatus(Challenge challenge) {
+        if (challenge.getStartDate() == null && challenge.getEndDate() == null) {
+            return "ACTIVE"; // 기간이 설정되지 않은 경우 항상 활성
+        }
+        
+        if (!challenge.hasStarted()) {
+            return "UPCOMING"; // 시작 전
+        } else if (challenge.hasEnded()) {
+            return "ENDED"; // 종료됨
+        } else {
+            return "ACTIVE"; // 진행 중
         }
     }
 }

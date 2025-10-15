@@ -44,9 +44,13 @@ public class ChallengeRecord extends DateTimeEntity {
     @Column(name = "team_id")
     private Long teamId;
 
-    // 제출 날짜
+    // 제출 날짜 (실제 활동 날짜)
     @Column(name = "activity_date", nullable = false)
     private LocalDateTime activityDate;
+
+    // 챌린지 참여 신청 날짜
+    @Column(name = "participation_date")
+    private LocalDateTime participationDate;
 
     // 사진 인증용: 이미지 URL
     @Column(name = "image_url", length = 500)
@@ -58,10 +62,20 @@ public class ChallengeRecord extends DateTimeEntity {
 
     // AI 인증 결과
     @Column(name = "verification_status", length = 20, nullable = false)
-    private String verificationStatus; // PENDING, APPROVED, REJECTED
+    private String verificationStatus; // PENDING, APPROVED, REJECTED, NEEDS_REVIEW
 
     @Column(name = "verified_at")
     private LocalDateTime verifiedAt;
+
+    // AI 검증 관련 필드
+    @Column(name = "ai_confidence")
+    private Double aiConfidence; // AI 신뢰도 (0.0 ~ 1.0)
+
+    @Column(name = "ai_explanation", columnDefinition = "TEXT")
+    private String aiExplanation; // AI 판단 설명
+
+    @Column(name = "ai_detected_items", length = 500)
+    private String aiDetectedItems; // AI가 감지한 항목들 (JSON 문자열)
 
     // 개별 보상 포인트 (FIXED 정책일 때만 사용)
     @Column(name = "points_awarded")
@@ -73,15 +87,20 @@ public class ChallengeRecord extends DateTimeEntity {
 
     @Builder
     public ChallengeRecord(Challenge challenge, Member member, Long teamId,
-                              LocalDateTime activityDate, String imageUrl,
-                              Long stepCount, String verificationStatus) {
+                              LocalDateTime activityDate, LocalDateTime participationDate,
+                              String imageUrl, Long stepCount, String verificationStatus,
+                              Double aiConfidence, String aiExplanation, String aiDetectedItems) {
         this.challenge = challenge;
         this.member = member;
         this.teamId = teamId;
         this.activityDate = activityDate == null ? LocalDateTime.now() : activityDate;
+        this.participationDate = participationDate == null ? LocalDateTime.now() : participationDate;
         this.imageUrl = imageUrl;
         this.stepCount = stepCount;
         this.verificationStatus = verificationStatus == null ? "PENDING" : verificationStatus;
+        this.aiConfidence = aiConfidence;
+        this.aiExplanation = aiExplanation;
+        this.aiDetectedItems = aiDetectedItems;
     }
 
     public void approve(Integer points, Integer teamScore, LocalDateTime when) {
@@ -101,5 +120,27 @@ public class ChallengeRecord extends DateTimeEntity {
         if ("VERIFIED".equals(status) || "APPROVED".equals(status)) {
             this.verifiedAt = LocalDateTime.now();
         }
+    }
+
+    public void updateAiVerification(String status, Double confidence, String explanation, String detectedItems) {
+        this.verificationStatus = status;
+        this.aiConfidence = confidence;
+        this.aiExplanation = explanation;
+        this.aiDetectedItems = detectedItems;
+    }
+
+    public void needsReview(Double confidence, String explanation, String detectedItems) {
+        this.verificationStatus = "NEEDS_REVIEW";
+        this.aiConfidence = confidence;
+        this.aiExplanation = explanation;
+        this.aiDetectedItems = detectedItems;
+    }
+    
+    public void updateImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+    
+    public void updateStepCount(Long stepCount) {
+        this.stepCount = stepCount;
     }
 }

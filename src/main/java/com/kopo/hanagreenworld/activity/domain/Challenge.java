@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "challenges")
 @Getter
@@ -74,14 +76,30 @@ public class Challenge extends DateTimeEntity {
     @Column(name = "is_team_challenge", nullable = false)
     private Boolean isTeamChallenge = false;
 
+    @Column(name = "is_leader_only", nullable = false)
+    private Boolean isLeaderOnly = false;
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
+
+    // 챌린지 기간 관리
+    @Column(name = "start_date")
+    private LocalDateTime startDate; // 챌린지 시작 날짜
+
+    @Column(name = "end_date")
+    private LocalDateTime endDate; // 챌린지 종료 날짜
+
+    // 환경 임팩트 관련 필드
+    @Column(name = "carbon_saved")
+    private Double carbonSaved; // 탄소절약량 (kg)
 
     @Builder
     public Challenge(ChallengeCode code, String title, String description,
                      ChallengeRewardPolicy rewardPolicy,
                      Integer points, Integer teamScore,
-                     Boolean isTeamChallenge, Boolean isActive) {
+                     Boolean isTeamChallenge, Boolean isLeaderOnly, Boolean isActive,
+                     LocalDateTime startDate, LocalDateTime endDate,
+                     Double carbonSaved) {
         this.code = code;
         this.title = title;
         this.description = description;
@@ -89,8 +107,64 @@ public class Challenge extends DateTimeEntity {
         this.points = points;
         this.teamScore = teamScore;
         this.isTeamChallenge = isTeamChallenge == null ? false : isTeamChallenge;
+        this.isLeaderOnly = isLeaderOnly == null ? false : isLeaderOnly;
         this.isActive = isActive == null ? true : isActive;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.carbonSaved = carbonSaved;
     }
 
     public void deactivate() { this.isActive = false; }
+
+    public boolean isLeaderOnlyChallenge() {
+        return this.isLeaderOnly;
+    }
+
+    public boolean isTeamChallenge() {
+        return this.isTeamChallenge;
+    }
+
+    public boolean isCurrentlyActive() {
+        LocalDateTime now = LocalDateTime.now();
+        
+        // 시작 날짜가 설정되지 않은 경우 항상 활성
+        if (startDate == null && endDate == null) {
+            return true;
+        }
+        
+        // 시작 날짜만 설정된 경우
+        if (startDate != null && endDate == null) {
+            return now.isAfter(startDate) || now.isEqual(startDate);
+        }
+        
+        // 종료 날짜만 설정된 경우
+        if (startDate == null && endDate != null) {
+            return now.isBefore(endDate) || now.isEqual(endDate);
+        }
+        
+        // 시작 날짜와 종료 날짜가 모두 설정된 경우
+        return (now.isAfter(startDate) || now.isEqual(startDate)) && 
+               (now.isBefore(endDate) || now.isEqual(endDate));
+    }
+
+    public boolean hasStarted() {
+        if (startDate == null) {
+            return true; // 시작 날짜가 설정되지 않은 경우 항상 시작된 것으로 간주
+        }
+        return LocalDateTime.now().isAfter(startDate) || LocalDateTime.now().isEqual(startDate);
+    }
+
+    public boolean hasEnded() {
+        if (endDate == null) {
+            return false; // 종료 날짜가 설정되지 않은 경우 종료되지 않은 것으로 간주
+        }
+        return LocalDateTime.now().isAfter(endDate);
+    }
+
+    public void validateAndUpdateActiveStatus() {
+        boolean shouldBeActive = isCurrentlyActive();
+        if (this.isActive != shouldBeActive) {
+            this.isActive = shouldBeActive;
+        }
+    }
 }

@@ -10,10 +10,26 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChallengeParticipationResponse {
-    private Long challengeRecordId;
-    private String challengeTitle;
-    private String verificationStatus;
+    private boolean success;
     private String message;
-    private Integer pointsAwarded;
-    private Integer teamScoreAwarded;
+    private ChallengeParticipationData data;
+    
+    // AI 검증 상세 정보
+    private Double confidence;
+    private String explanation;
+    private String detectedItems; // JSON 문자열로 저장
+    private String verifiedAt;
+    
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ChallengeParticipationData {
+        private Long challengeRecordId;
+        private String challengeTitle;
+        private String verificationStatus;
+        private String message;
+        private Integer pointsAwarded;
+        private Integer teamScoreAwarded;
+    }
 }
