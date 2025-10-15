@@ -30,8 +30,13 @@ public class Team extends DateTimeEntity {
     
     @Column(name = "current_team_points")
     private Long currentTeamPoints = 0L;
+    
+    @Column(name = "total_carbon_saved")
+    private Double totalCarbonSaved = 0.0;
+    
+    @Column(name = "current_carbon_saved")
+    private Double currentCarbonSaved = 0.0;
 
-    // 팀장 ID만 참조 (순환 참조 방지)
     @Column(name = "leader_id", nullable = false)
     private Long leaderId;
 
@@ -59,5 +64,20 @@ public class Team extends DateTimeEntity {
 
     public boolean isLeader(Long memberId) {
         return this.leaderId != null && this.leaderId.equals(memberId);
+    }
+
+    public void addPoints(Long points) {
+        this.totalTeamPoints += points;
+        this.currentTeamPoints += points;
+    }
+
+    public void addCarbonSaved(Double carbonSaved) {
+        this.totalCarbonSaved += carbonSaved;
+        this.currentCarbonSaved += carbonSaved;
+    }
+
+    public void resetMonthlyPoints() {
+        this.currentTeamPoints = 0L;
+        this.currentCarbonSaved = 0.0;
     }
 }
