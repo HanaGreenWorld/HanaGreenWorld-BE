@@ -53,4 +53,12 @@ public interface WalkingRecordRepository extends JpaRepository<WalkingRecord, Lo
     
     // 특정 회원의 최근 걷기 기록 (최대 5개)
     List<WalkingRecord> findTop5ByMember_MemberIdOrderByActivityDateDesc(Long memberId);
+    
+    // 특정 회원의 총 탄소 절약량 조회
+    @Query("SELECT SUM(w.carbonSaved) FROM WalkingRecord w WHERE w.member.memberId = :memberId")
+    java.math.BigDecimal findTotalCarbonSavedByMemberId(Long memberId);
+    
+    // 특정 회원의 특정 기간 총 탄소 절약량 조회
+    @Query("SELECT SUM(w.carbonSaved) FROM WalkingRecord w WHERE w.member.memberId = :memberId AND w.activityDate BETWEEN :startDate AND :endDate")
+    java.math.BigDecimal findTotalCarbonSavedByMemberIdAndDateRange(Long memberId, LocalDateTime startDate, LocalDateTime endDate);
 }

@@ -80,13 +80,13 @@ public class EcoSeedController {
             nextLevel.put("id", "intermediate");
             nextLevel.put("name", "친환경 실천가");
             nextLevel.put("description", "🌿 환경 보호를 실천하고 있어요!");
-            nextLevel.put("requiredPoints", 1000L);
+            nextLevel.put("requiredPoints", 5000L);
             nextLevel.put("icon", "🌿");
             nextLevel.put("color", "#059669");
             defaultStats.put("nextLevel", nextLevel);
             
             defaultStats.put("progressToNextLevel", 0.0);
-            defaultStats.put("pointsToNextLevel", 1000L);
+            defaultStats.put("pointsToNextLevel", 5000L);
             
             log.info("기본 통계 정보 반환");
             return ResponseEntity.ok(defaultStats);
@@ -151,7 +151,7 @@ public class EcoSeedController {
         EcoSeedEarnRequest request = EcoSeedEarnRequest.builder()
                 .category(PointCategory.WALKING)
                 .pointsAmount(points)
-                .description(steps + "걸음으로 원큐씨앗 적립")
+                .description(steps + "걸음")
                 .build();
         
         EcoSeedResponse response = ecoSeedService.earnEcoSeeds(request);
@@ -186,6 +186,16 @@ public class EcoSeedController {
                 .build();
         
         EcoSeedResponse response = ecoSeedService.earnEcoSeeds(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/calendar")
+    @Operation(summary = "달력 데이터 조회", description = "월별 씨앗 획득 현황을 조회합니다.")
+    public ResponseEntity<Map<String, Object>> getCalendarData(
+            @RequestParam int year,
+            @RequestParam int month) {
+        log.info("달력 데이터 조회 요청: {}.{}", year, month);
+        Map<String, Object> response = ecoSeedService.getCalendarData(year, month);
         return ResponseEntity.ok(response);
     }
 }
