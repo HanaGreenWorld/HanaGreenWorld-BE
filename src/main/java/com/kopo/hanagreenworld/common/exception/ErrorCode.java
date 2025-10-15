@@ -42,6 +42,8 @@ public enum ErrorCode {
     CHALLENGE_NOT_FOUND(400, "CH_001", "요청한 챌린지를 찾을 수 없습니다."),
     CHALLENGE_ALREADY_PARTICIPATED(400, "CH_002", "이미 참여한 챌린지입니다."),
     CHALLENGE_ALREADY_PARTICIPATED_TODAY(400, "CH_003", "오늘 이미 참여한 챌린지입니다."),
+    INVALID_STATUS(400, "CH_004", "유효하지 않은 검증 상태입니다."),
+    LEADER_ONLY_CHALLENGE(403, "CH_005", "팀장만 참여 가능한 챌린지입니다."),
 
     // 팀 관련 에러
     TEAM_NOT_FOUND(400, "TM_001", "팀을 찾을 수 없습니다."),
@@ -66,6 +68,12 @@ public enum ErrorCode {
     MESSAGE_NOT_FOUND(400, "CH_002", "메시지를 찾을 수 없습니다."),
     MESSAGE_TOO_LONG(400, "CH_003", "메시지가 너무 깁니다."),
     DAILY_MESSAGE_LIMIT_EXCEEDED(400, "CH_004", "일일 메시지 한도를 초과했습니다."),
+
+    // 챌린지 관련 에러
+    CHALLENGE_NOT_ACTIVE(400, "CL_002", "현재 활성화되지 않은 챌린지입니다."),
+    CHALLENGE_NOT_STARTED(400, "CL_003", "아직 시작되지 않은 챌린지입니다."),
+    CHALLENGE_ALREADY_ENDED(400, "CL_004", "이미 종료된 챌린지입니다."),
+    DUPLICATE_IMAGE_SUBMISSION(400, "CL_005", "이미 사용된 이미지입니다. 다른 사진을 촬영하거나 갤러리에서 새로운 이미지를 선택해주세요."),
     ;
 
     private final int status;

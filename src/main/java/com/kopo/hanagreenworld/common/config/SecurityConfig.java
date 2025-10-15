@@ -50,7 +50,9 @@ public class SecurityConfig {
                 .requestMatchers("/admin/**").permitAll() // 관리자 API는 인증 없이 접근 허용
                 .requestMatchers("/ws/**", "/stomp/**").permitAll() // WebSocket 엔드포인트 허용
                 .requestMatchers("/api/v1/integration/**").permitAll() // 통합 API 허용 (내부 서비스 간 통신)
+                .requestMatchers("/api/integration/webhook/**").permitAll() // 웹훅 엔드포인트 허용
                 .requestMatchers("/quiz/**", "/eco-seeds/**", "/walking/**").permitAll() // 개발환경에서는 모든 API 허용
+                .requestMatchers("/challenge_images/**", "/uploads/**").permitAll() // 정적 파일 서빙 허용
                 .anyRequest().permitAll() // 개발환경에서는 모든 요청 허용
             )
             .addFilterBefore(new RequestLoggingFilter(), UsernamePasswordAuthenticationFilter.class)
