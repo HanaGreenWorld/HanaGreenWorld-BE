@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface EcoMerchantRepository extends JpaRepository<EcoMerchant, Long> {
@@ -51,6 +52,9 @@ public interface EcoMerchantRepository extends JpaRepository<EcoMerchant, Long> 
         EcoMerchant.MerchantCategory category, 
         Boolean isVerified
     );
+    
+    // 사업자 번호로 활성 가맹점 조회 (친환경 가맹점 매칭용)
+    Optional<EcoMerchant> findByBusinessNumberAndIsActiveTrue(String businessNumber);
     
     // 모든 활성 가맹점 조회
     List<EcoMerchant> findByIsActiveTrue();
