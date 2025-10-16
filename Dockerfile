@@ -23,16 +23,7 @@ ENV PORT=8080
 WORKDIR /app
 
 # 빌더 스테이지에서 생성된 JAR 파일을 복사합니다.
-# find 명령을 사용하여 정확한 JAR 파일을 찾습니다.
-RUN echo "build/libs 디렉토리 확인 중..."
-RUN if [ -d "build/libs" ]; then \
-        JAR_FILE=$(find build/libs -name "*.jar" -type f | head -1) && \
-        echo "JAR 파일 찾음: $JAR_FILE" && \
-        cp "$JAR_FILE" app.jar; \
-    else \
-        echo "build/libs 디렉토리가 없습니다. 빌드가 실패했을 수 있습니다." && \
-        exit 1; \
-    fi
+COPY --from=builder /app/build/libs/*.jar app.jar
 
 # Cloud Run의 자체 헬스 체크를 사용하므로 Dockerfile의 HEALTHCHECK는 제거합니다.
 
