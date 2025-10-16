@@ -43,7 +43,6 @@ public class ImageHashService {
                         .build();
             }
 
-            // 이미지 해시 계산
             String imageHash = calculateImageHash(imageBytes);
             if (imageHash == null) {
                 return ImageHashResult.builder()
@@ -53,7 +52,6 @@ public class ImageHashService {
                         .build();
             }
 
-            // 중복 검사
             DuplicateCheckResult duplicateResult = checkForDuplicates(imageHash, memberId, challengeId);
 
             return ImageHashResult.builder()
@@ -119,7 +117,7 @@ public class ImageHashService {
                 ImageHash hash = existingHash.get();
                 hash.updateImageInfo(imageUrl, imageHash, fileSize, "image/jpeg");
                 imageHashRepository.save(hash);
-                log.info("기존 이미지 해시 정보 업데이트: {}", imageHash);
+                log.info("📝 기존 이미지 해시 정보 업데이트: {}", imageHash);
             } else {
                 // 새로운 해시 정보 저장
                 ImageHash newHash = ImageHash.builder()
@@ -132,7 +130,7 @@ public class ImageHashService {
                         .build();
                 
                 imageHashRepository.save(newHash);
-                log.info("새로운 이미지 해시 정보 저장: {}", imageHash);
+                log.info("💾 새로운 이미지 해시 정보 저장: {}", imageHash);
             }
         } catch (Exception e) {
             log.error("이미지 해시 정보 저장 실패: {}", e.getMessage(), e);
@@ -178,7 +176,7 @@ public class ImageHashService {
     @Transactional
     public void saveImageHashAfterVerification(String imageUrl, Long memberId, Long challengeId) {
         try {
-            log.info("AI 검증 성공 후 이미지 해시 저장: 사용자 {}, 챌린지 {}", memberId, challengeId);
+            log.info("💾 AI 검증 성공 후 이미지 해시 저장: 사용자 {}, 챌린지 {}", memberId, challengeId);
             
             // 이미지 다운로드
             byte[] imageBytes = downloadImage(imageUrl);
@@ -201,7 +199,6 @@ public class ImageHashService {
             log.error("AI 검증 후 이미지 해시 저장 실패: {}", e.getMessage(), e);
         }
     }
-
 
     public ImageHashStats getUserImageHashStats(Long memberId) {
         try {
@@ -231,6 +228,9 @@ public class ImageHashService {
             String duplicateType
     ) {}
 
+    /**
+     * 이미지 해시 검사 결과 DTO
+     */
     @lombok.Data
     @lombok.Builder
     public static class ImageHashResult {
@@ -241,19 +241,9 @@ public class ImageHashService {
         private String duplicateType; // SAME_USER, OTHER_USER, NONE
     }
 
-    private void updateMemberCarbonSaved(Long memberId, Double carbonSaved) {
-        if (carbonSaved != null && carbonSaved > 0) {
-            try {
-                // MemberProfileService를 통해 탄소절약량 업데이트
-                memberProfileService.updateMemberCarbonSaved(memberId, carbonSaved);
-                log.info("챌린지 승인으로 인한 탄소절약량 업데이트 완료: memberId={}, carbonSaved={}", memberId, carbonSaved);
-            } catch (Exception e) {
-                log.error("탄소절약량 업데이트 실패: memberId={}, carbonSaved={}, error={}", 
-                    memberId, carbonSaved, e.getMessage());
-            }
-        }
-    }
-
+    /**
+     * 이미지 해시 통계 DTO
+     */
     @lombok.Data
     @lombok.Builder
     public static class ImageHashStats {

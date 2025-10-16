@@ -220,7 +220,7 @@ public class EcoSeedService {
                     .member(member)
                     .pointTransactionType(PointTransactionType.CONVERT)
                     .category(PointCategory.HANA_MONEY_CONVERSION)
-                    .description("하나머니로 전환: " + request.getPointsAmount() + "개")
+                    .description("하나머니로 전환")
                     .pointsAmount(-request.getPointsAmount()) // 음수로 저장
                     .balanceAfter(profile.getCurrentPoints())
                     .build();

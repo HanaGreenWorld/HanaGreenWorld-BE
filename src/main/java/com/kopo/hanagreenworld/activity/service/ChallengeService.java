@@ -304,7 +304,7 @@ public class ChallengeService {
                         EcoSeedEarnRequest earnRequest = EcoSeedEarnRequest.builder()
                                 .category(PointCategory.ECO_CHALLENGE)
                                 .pointsAmount(pointsAwarded)
-                                .description(challenge.getTitle() + " 챌린지 완료")
+                                .description(challenge.getTitle() + " 챌린지 성공")
                                 .build();
                         ecoSeedService.earnEcoSeeds(earnRequest);
                     }
@@ -459,7 +459,7 @@ public class ChallengeService {
             EcoSeedEarnRequest earnRequest = EcoSeedEarnRequest.builder()
                     .category(PointCategory.ECO_CHALLENGE)
                     .pointsAmount(points)
-                    .description(challenge.getTitle() + " 챌린지 완료 (관리자 승인)")
+                    .description(challenge.getTitle() + " 챌린지 성공 (관리자 승인)")
                     .build();
             ecoSeedService.earnEcoSeeds(earnRequest);
         }

@@ -175,14 +175,14 @@ public class EcoSeedController {
     }
 
     @PostMapping("/earn/challenge")
-    @Operation(summary = "챌린지로 원큐씨앗 적립", description = "챌린지 완료로 원큐씨앗을 적립합니다.")
+    @Operation(summary = "챌린지로 원큐씨앗 적립", description = "챌린지 성공으로 원큐씨앗을 적립합니다.")
     public ResponseEntity<EcoSeedResponse> earnFromChallenge(@RequestParam String challengeName) {
         log.info("챌린지로 원큐씨앗 적립 요청: {}", challengeName);
 
         EcoSeedEarnRequest request = EcoSeedEarnRequest.builder()
                 .category(PointCategory.ECO_CHALLENGE)
                 .pointsAmount(10)
-                .description(challengeName + " 챌린지 완료로 원큐씨앗 적립")
+                .description(challengeName + " 챌린지 성공으로 원큐씨앗 적립")
                 .build();
         
         EcoSeedResponse response = ecoSeedService.earnEcoSeeds(request);

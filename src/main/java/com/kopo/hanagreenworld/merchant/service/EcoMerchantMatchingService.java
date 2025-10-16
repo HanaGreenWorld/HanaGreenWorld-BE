@@ -83,8 +83,7 @@ public class EcoMerchantMatchingService {
             EcoSeedEarnRequest earnRequest = EcoSeedEarnRequest.builder()
                     .pointsAmount(additionalSeeds.intValue())
                     .category(PointCategory.ECO_MERCHANT)
-                    .description(String.format("%s에서 친환경 가맹점 혜택으로 %d원큐씨앗 지급 (거래금액: %,d원, 레벨: %s)",
-                            ecoMerchant.getName(), additionalSeeds, amount, currentLevel))
+                    .description(String.format("%s", ecoMerchant.getName()))
                     .build();
             
             ecoSeedService.earnEcoSeedsForWebhook(userId, earnRequest);
@@ -94,7 +93,7 @@ public class EcoMerchantMatchingService {
                     .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다: " + userId));
             
             java.time.LocalDateTime parsedTransactionDate = java.time.LocalDateTime.parse(transactionDate);
-            BigDecimal benefitRate = BigDecimal.valueOf(additionalSeeds).divide(BigDecimal.valueOf(amount), 4, BigDecimal.ROUND_HALF_UP);
+            BigDecimal benefitRate = BigDecimal.valueOf(additionalSeeds).divide(BigDecimal.valueOf(amount), 4, java.math.RoundingMode.HALF_UP);
             
             EcoMerchantTransaction ecoTransaction = EcoMerchantTransaction.builder()
                     .member(member)
@@ -183,16 +182,15 @@ public class EcoMerchantMatchingService {
             
             long averageAdditionalSeeds = totalTransactions == 0 ? 0 : totalAdditionalSeeds / totalTransactions;
             
-            Map<String, Object> stats = Map.of(
-                "totalEcoTransactions", totalTransactions,
-                "totalEcoAmount", totalEcoAmount,
-                "totalAdditionalSeeds", totalAdditionalSeeds,
-                "averageAdditionalSeeds", averageAdditionalSeeds,
-                "ecoMerchantCount", uniqueMerchantCount,
-                "currentMonthSeeds", currentMonthSeeds,
-                "currentMonthAmount", currentMonthAmount,
-                "currentMonthMerchants", currentMonthMerchants
-            );
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalEcoTransactions", totalTransactions);
+            stats.put("totalEcoAmount", totalEcoAmount);
+            stats.put("totalAdditionalSeeds", totalAdditionalSeeds);
+            stats.put("averageAdditionalSeeds", averageAdditionalSeeds);
+            stats.put("ecoMerchantCount", uniqueMerchantCount);
+            stats.put("currentMonthSeeds", currentMonthSeeds);
+            stats.put("currentMonthAmount", currentMonthAmount);
+            stats.put("currentMonthMerchants", currentMonthMerchants);
             
             log.info("친환경 가맹점 통계 조회 완료 - 사용자ID: {}, 총거래: {}, 총씨앗: {}, 총금액: {}", 
                     userId, totalTransactions, totalAdditionalSeeds, totalEcoAmount);
@@ -201,16 +199,16 @@ public class EcoMerchantMatchingService {
             
         } catch (Exception e) {
             log.error("친환경 가맹점 통계 조회 실패 - 사용자ID: {}, 에러: {}", userId, e.getMessage(), e);
-            return Map.of(
-                "totalEcoTransactions", 0,
-                "totalEcoAmount", 0L,
-                "totalAdditionalSeeds", 0L,
-                "averageAdditionalSeeds", 0,
-                "ecoMerchantCount", 0,
-                "currentMonthSeeds", 0L,
-                "currentMonthAmount", 0L,
-                "currentMonthMerchants", 0L
-            );
+            Map<String, Object> errorStats = new HashMap<>();
+            errorStats.put("totalEcoTransactions", 0);
+            errorStats.put("totalEcoAmount", 0L);
+            errorStats.put("totalAdditionalSeeds", 0L);
+            errorStats.put("averageAdditionalSeeds", 0);
+            errorStats.put("ecoMerchantCount", 0);
+            errorStats.put("currentMonthSeeds", 0L);
+            errorStats.put("currentMonthAmount", 0L);
+            errorStats.put("currentMonthMerchants", 0L);
+            return errorStats;
         }
     }
 
