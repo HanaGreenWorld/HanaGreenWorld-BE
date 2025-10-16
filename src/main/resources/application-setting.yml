@@ -31,7 +31,7 @@ ci:
 # AI 서버 설정
 ai:
   server:
-    url: ${SERVER_URL}:${AI_SERVER_PORT}
+    url: ${AI_SERVER_URL}
 
 # 서버 설정
 server:
@@ -41,6 +41,6 @@ server:
 # 통합 서비스 URL 설정
 integration:
   bank:
-    url: ${SERVER_URL}:${BANK_SERVICE_PORT}
+    url: ${BANK_SERVER_URL}
   card:
-    url: ${SERVER_URL}:${CARD_SERVICE_PORT}
+    url: ${CARD_SERVER_URL}

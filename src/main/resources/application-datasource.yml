@@ -1,4 +1,4 @@
- spring:
+spring:
    datasource:
       url: ${DATASOURCE_URL}
       username: ${DATASOURCE_USERNAME}
@@ -11,3 +11,15 @@
         max-lifetime: 1200000
         connection-timeout: 20000
         leak-detection-threshold: 60000
+
+   data:
+     redis:
+       host: ${REDISHOST}
+       port: ${REDISPORT}
+       password: ${REDISPASSWORD}
+       timeout: 2000ms
+       lettuce:
+         pool:
+           max-active: 8
+           max-idle: 8
+           min-idle: 0

@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE}  # Railway에서는 prod 프로파일 사용
+    active: ${SPRING_PROFILES_ACTIVE:prod}  # Railway에서는 prod 프로파일 사용
   
   jpa:
     hibernate:
