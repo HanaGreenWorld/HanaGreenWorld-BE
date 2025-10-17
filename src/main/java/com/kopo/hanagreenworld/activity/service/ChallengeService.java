@@ -307,6 +307,12 @@ public class ChallengeService {
                                 .description(challenge.getTitle() + " 챌린지 성공")
                                 .build();
                         ecoSeedService.earnEcoSeeds(earnRequest);
+                        
+                        // MemberProfile에 탄소절감량과 활동횟수 업데이트
+                        memberProfileService.updateMemberActivityWithCarbon(
+                            record.getMember().getMemberId(), 
+                            challenge.getCarbonSaved()
+                        );
                     }
                     
                     // 팀 챌린지인 경우 팀 점수 적립

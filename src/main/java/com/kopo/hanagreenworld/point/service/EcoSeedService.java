@@ -82,6 +82,7 @@ public class EcoSeedService {
         return EcoSeedResponse.builder()
                 .totalSeeds(totalEarned)
                 .currentSeeds(profile.getCurrentPoints())
+                .monthlySeeds(profile.getCurrentMonthPoints())
                 .usedSeeds(actualTotalUsed)
                 .convertedSeeds(Math.abs(totalConverted))
                 .message("원큐씨앗 정보 조회 완료")
@@ -100,8 +101,9 @@ public class EcoSeedService {
         MemberProfile profile = getOrCreateMemberProfile(memberId);
         
         try {
-            // 원큐씨앗 적립 (현재 보유량만 업데이트)
+            // 원큐씨앗 적립 (현재 보유량과 월간 보유량 업데이트)
             profile.updateCurrentPoints(request.getPointsAmount().longValue());
+            profile.updateCurrentMonthPoints(request.getPointsAmount().longValue());
             
             // 거래 내역 생성
             PointTransaction transaction = PointTransaction.builder()
@@ -142,8 +144,9 @@ public class EcoSeedService {
         MemberProfile profile = getOrCreateMemberProfile(memberId);
         
         try {
-            // 원큐씨앗 적립 (현재 보유량만 업데이트)
+            // 원큐씨앗 적립 (현재 보유량과 월간 보유량 업데이트)
             profile.updateCurrentPoints(request.getPointsAmount().longValue());
+            profile.updateCurrentMonthPoints(request.getPointsAmount().longValue());
             
             // 거래 내역 생성
             PointTransaction transaction = PointTransaction.builder()

@@ -151,7 +151,7 @@ public class EcoSeedController {
         EcoSeedEarnRequest request = EcoSeedEarnRequest.builder()
                 .category(PointCategory.WALKING)
                 .pointsAmount(points)
-                .description(steps + "걸음")
+                .description("일일 걷기 완료")
                 .build();
         
         EcoSeedResponse response = ecoSeedService.earnEcoSeeds(request);

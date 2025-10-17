@@ -46,6 +46,9 @@ public class MemberProfile extends DateTimeEntity {
     @Column(name = "current_month_activities_count")
     private Integer currentMonthActivitiesCount = 0;
 
+    @Column(name = "current_month_points")
+    private Long currentMonthPoints = 0L;
+
     @Column(name = "walking_consent")
     private Boolean walkingConsent = false;
 
@@ -140,6 +143,10 @@ public class MemberProfile extends DateTimeEntity {
         this.currentPoints += points;
     }
 
+    public void updateCurrentMonthPoints(Long points) {
+        this.currentMonthPoints += points;
+    }
+
     public void updateCarbonSaved(Double carbonSaved) {
         this.totalCarbonSaved += carbonSaved;
         this.currentMonthCarbonSaved += carbonSaved;
@@ -154,6 +161,7 @@ public class MemberProfile extends DateTimeEntity {
     public void resetCurrentMonthData() {
         this.currentMonthCarbonSaved = 0.0;
         this.currentMonthActivitiesCount = 0;
+        this.currentMonthPoints = 0L;
     }
 
     // 걷기 관련 메서드들

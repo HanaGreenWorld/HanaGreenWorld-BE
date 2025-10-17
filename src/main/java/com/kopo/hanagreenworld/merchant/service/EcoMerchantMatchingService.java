@@ -10,6 +10,7 @@ import com.kopo.hanagreenworld.point.domain.PointCategory;
 import com.kopo.hanagreenworld.point.domain.PointTransaction;
 import com.kopo.hanagreenworld.point.repository.PointTransactionRepository;
 import com.kopo.hanagreenworld.member.service.EcoReportService;
+import com.kopo.hanagreenworld.member.service.MemberProfileService;
 import com.kopo.hanagreenworld.member.domain.Member;
 import com.kopo.hanagreenworld.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class EcoMerchantMatchingService {
     private final EcoMerchantTransactionRepository ecoMerchantTransactionRepository;
     private final EcoSeedService ecoSeedService;
     private final EcoReportService ecoReportService;
+    private final MemberProfileService memberProfileService;
     private final PointTransactionRepository pointTransactionRepository;
     private final MemberRepository memberRepository;
 
@@ -87,6 +89,8 @@ public class EcoMerchantMatchingService {
                     .build();
             
             ecoSeedService.earnEcoSeedsForWebhook(userId, earnRequest);
+            
+            memberProfileService.updateMemberActivityWithoutCarbon(userId);
             
             // 5. 친환경 가맹점 거래 내역 저장
             Member member = memberRepository.findById(userId)

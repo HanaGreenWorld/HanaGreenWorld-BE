@@ -6,6 +6,7 @@ import com.kopo.hanagreenworld.activity.repository.QuizRepository;
 import com.kopo.hanagreenworld.activity.repository.QuizRecordRepository;
 import com.kopo.hanagreenworld.member.domain.Member;
 import com.kopo.hanagreenworld.member.repository.MemberRepository;
+import com.kopo.hanagreenworld.member.service.MemberProfileService;
 import com.kopo.hanagreenworld.point.service.EcoSeedService;
 import com.kopo.hanagreenworld.point.dto.EcoSeedEarnRequest;
 import com.kopo.hanagreenworld.point.domain.PointCategory;
@@ -26,6 +27,7 @@ public class QuizService {
     private final QuizRepository quizRepository;
     private final QuizRecordRepository quizRecordRepository;
     private final MemberRepository memberRepository;
+    private final MemberProfileService memberProfileService;
     private final EcoSeedService ecoSeedService;
     private final QuizGeneratorService quizGeneratorService;
 
@@ -99,6 +101,9 @@ public class QuizService {
                     .build();
 
             ecoSeedService.earnEcoSeeds(pointRequest);
+            
+            // MemberProfile에 활동횟수 업데이트 (탄소절감량 제외)
+            memberProfileService.updateMemberActivityWithoutCarbon(memberId);
         }
 
         return savedRecord;

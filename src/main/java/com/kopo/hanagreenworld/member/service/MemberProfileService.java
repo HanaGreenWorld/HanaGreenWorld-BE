@@ -115,4 +115,46 @@ public class MemberProfileService {
             log.error("이번달 데이터 초기화 실패: memberId={}, error={}", memberId, e.getMessage(), e);
         }
     }
+
+    @Transactional
+    public void updateMemberActivityWithCarbon(Long memberId, Double carbonSaved) {
+        try {
+            MemberProfile profile = getOrCreateMemberProfile(memberId);
+            
+            // 탄소절감량 업데이트
+            if (carbonSaved != null && carbonSaved > 0) {
+                profile.updateCarbonSaved(carbonSaved);
+            }
+            
+            // 활동 횟수 증가
+            profile.incrementActivityCount();
+            
+            memberProfileRepository.save(profile);
+            
+            log.info("활동 업데이트 완료 (탄소절감량 포함): memberId={}, carbonSaved={}, totalCarbonSaved={}, monthlyCarbonSaved={}, totalActivities={}, monthlyActivities={}", 
+                memberId, carbonSaved, profile.getTotalCarbonSaved(), profile.getCurrentMonthCarbonSaved(), 
+                profile.getTotalActivitiesCount(), profile.getCurrentMonthActivitiesCount());
+        } catch (Exception e) {
+            log.error("활동 업데이트 실패 (탄소절감량 포함): memberId={}, carbonSaved={}, error={}", 
+                memberId, carbonSaved, e.getMessage(), e);
+        }
+    }
+
+    @Transactional
+    public void updateMemberActivityWithoutCarbon(Long memberId) {
+        try {
+            MemberProfile profile = getOrCreateMemberProfile(memberId);
+            
+            // 활동 횟수 증가
+            profile.incrementActivityCount();
+            
+            memberProfileRepository.save(profile);
+            
+            log.info("활동 업데이트 완료 (탄소절감량 제외): memberId={}, totalActivities={}, monthlyActivities={}", 
+                memberId, profile.getTotalActivitiesCount(), profile.getCurrentMonthActivitiesCount());
+        } catch (Exception e) {
+            log.error("활동 업데이트 실패 (탄소절감량 제외): memberId={}, error={}", 
+                memberId, e.getMessage(), e);
+        }
+    }
 }

@@ -2,6 +2,7 @@ package com.kopo.hanagreenworld.integration.controller;
 
 import com.kopo.hanagreenworld.member.repository.MemberRepository;
 import com.kopo.hanagreenworld.member.domain.Member;
+import com.kopo.hanagreenworld.member.service.MemberProfileService;
 import com.kopo.hanagreenworld.point.service.EcoSeedService;
 import com.kopo.hanagreenworld.point.dto.EcoSeedEarnRequest;
 import com.kopo.hanagreenworld.point.domain.PointCategory;
@@ -31,6 +32,7 @@ import java.util.Base64;
 public class ElectronicReceiptWebhookController {
 
     private final MemberRepository memberRepository;
+    private final MemberProfileService memberProfileService;
     private final EcoSeedService ecoSeedService;
     private final PointTransactionRepository pointTransactionRepository;
     private final ElectronicReceiptRecordService electronicReceiptRecordService;
@@ -107,6 +109,8 @@ public class ElectronicReceiptWebhookController {
                 .build();
 
             ecoSeedService.earnEcoSeedsForWebhook(memberId, earnRequest);
+
+            memberProfileService.updateMemberActivityWithCarbon(memberId, 0.0005);
 
             // 전자확인증 기록 저장
             electronicReceiptRecordService.createElectronicReceiptRecord(

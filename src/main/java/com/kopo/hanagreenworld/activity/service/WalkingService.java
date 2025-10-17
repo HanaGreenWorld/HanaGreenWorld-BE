@@ -8,6 +8,7 @@ import com.kopo.hanagreenworld.activity.dto.WalkingResponse;
 import com.kopo.hanagreenworld.activity.repository.WalkingRecordRepository;
 import com.kopo.hanagreenworld.member.domain.MemberProfile;
 import com.kopo.hanagreenworld.member.repository.MemberProfileRepository;
+import com.kopo.hanagreenworld.member.service.MemberProfileService;
 import com.kopo.hanagreenworld.point.service.EcoSeedService;
 import com.kopo.hanagreenworld.point.dto.EcoSeedEarnRequest;
 import com.kopo.hanagreenworld.point.domain.PointCategory;
@@ -32,6 +33,7 @@ public class WalkingService {
 
     private final WalkingRecordRepository walkingRecordRepository;
     private final MemberProfileRepository memberProfileRepository;
+    private final MemberProfileService memberProfileService;
     private final EcoSeedService ecoSeedService;
 
     // 걷기 측정 동의 상태 조회
@@ -126,12 +128,15 @@ public class WalkingService {
             EcoSeedEarnRequest pointRequest = EcoSeedEarnRequest.builder()
                     .category(PointCategory.WALKING)
                     .pointsAmount(points)
-                    .description(request.getSteps() + "걸음")
+                    .description("일일 걷기 완료")
                     .build();
 
             ecoSeedService.earnEcoSeeds(pointRequest);
 
-            // 3단계: 동의 상태의 마지막 동기화 시간 업데이트
+            // 3단계: MemberProfile에 탄소절감량과 활동횟수 업데이트
+            memberProfileService.updateMemberActivityWithCarbon(memberId, carbonSaved.doubleValue());
+
+            // 4단계: 동의 상태의 마지막 동기화 시간 업데이트
             profile.updateWalkingLastSync();
             memberProfileRepository.save(profile);
 
@@ -147,10 +152,8 @@ public class WalkingService {
                     .build();
 
         } catch (BusinessException e) {
-            // 비즈니스 로직 예외는 그대로 전파
             throw e;
         } catch (Exception e) {
-            // 기타 예외 발생 시 로깅 후 BusinessException으로 변환
             log.error("걷기 기록 제출 중 예외 발생: memberId={}, steps={}", memberId, request.getSteps(), e);
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
