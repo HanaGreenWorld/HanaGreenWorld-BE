@@ -10,6 +10,7 @@ import com.kopo.hanagreenworld.member.domain.Member;
 import com.kopo.hanagreenworld.member.domain.MemberProfile;
 import com.kopo.hanagreenworld.member.domain.EcoReport;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,6 +20,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserStatsService {
@@ -28,39 +30,71 @@ public class UserStatsService {
     private final MemberRepository memberRepository;
     private final MemberProfileRepository memberProfileRepository;
 
+    @SuppressWarnings("deprecation")
     public UserStatsResponse getUserStats(Long memberId) {
-        // 실제 가입일 조회
-        String registrationDate = getRegistrationDate(memberId);
-        
-        // 실천일 계산
-        LocalDate regDate = LocalDate.parse(registrationDate);
-        LocalDate now = LocalDate.now();
-        int practiceDays = (int) ChronoUnit.DAYS.between(regDate, now);
-        
-        // 실제 상위 퍼센트 계산
-        double topPercentage = calculateTopPercentage(memberId);
-        
-        // 실제 월간 탄소절약량 증감률 계산
-        double monthlyGrowthRate = calculateMonthlyGrowthRate(memberId);
-        
-        // 실제 월간 원큐씨앗 증감률 계산
-        double ecoSeedsGrowthRate = calculateEcoSeedsGrowthRate(memberId);
-        
-        // 실제 순위 정보 계산
-        int[] rankingInfo = calculateUserRanking(memberId);
-        int userRanking = rankingInfo[0];
-        int totalUsers = rankingInfo[1];
-        
-        return UserStatsResponse.builder()
-                .registrationDate(registrationDate)
-                .practiceDays(practiceDays)
-                .averageComparison(topPercentage)
-                .monthlyGrowthRate(monthlyGrowthRate)
-                .ecoSeedsGrowthRate(ecoSeedsGrowthRate)
-                .comparisonDescription(String.format("상위 %.1f%% 사용자", (double)userRanking / totalUsers * 100))
-                .userRanking(userRanking)
-                .totalUsers(totalUsers)
-                .build();
+        try {
+            log.info("getUserStats 시작 - memberId: {}", memberId);
+            
+            // 실제 가입일 조회
+            String registrationDate = getRegistrationDate(memberId);
+            log.info("가입일: {}", registrationDate);
+            
+            // 실천일 계산
+            LocalDate regDate = LocalDate.parse(registrationDate);
+            LocalDate now = LocalDate.now();
+            int practiceDays = (int) ChronoUnit.DAYS.between(regDate, now);
+            log.info("실천일: {}일", practiceDays);
+            
+            // 실제 상위 퍼센트 계산 (기존 호환성을 위해 deprecated 메서드 사용)
+            @SuppressWarnings("deprecation")
+            double topPercentage = calculateTopPercentage(memberId);
+            log.info("상위 퍼센트: {}%", topPercentage);
+            
+            // 실제 월간 탄소절약량 증감률 계산
+            Double monthlyGrowthRate = calculateMonthlyGrowthRate(memberId);
+            log.info("월간 탄소절약량 증감률: {}", monthlyGrowthRate);
+            
+            // 실제 월간 원큐씨앗 증감률 계산
+            Double ecoSeedsGrowthRate = calculateEcoSeedsGrowthRate(memberId);
+            log.info("월간 원큐씨앗 증감률: {}", ecoSeedsGrowthRate);
+            
+            // 실제 순위 정보 계산
+            int[] rankingInfo = calculateUserRanking(memberId);
+            int userRanking = rankingInfo[0];
+            int totalUsers = rankingInfo[1];
+            log.info("사용자 순위: {}/{}", userRanking, totalUsers);
+            
+            // 4가지 평균 대비 계산
+            double monthlyCarbonComparison = calculateMonthlyTopPercentageByCarbon(memberId);
+            double totalCarbonComparison = calculateTotalTopPercentageByCarbon(memberId);
+            double monthlyPointsComparison = calculateMonthlyTopPercentageByPoints(memberId);
+            double totalPointsComparison = calculateTotalTopPercentageByPoints(memberId);
+            
+            log.info("월간 탄소 상위 퍼센트: {}%, 전체 탄소 상위 퍼센트: {}%", monthlyCarbonComparison, totalCarbonComparison);
+            log.info("월간 포인트 상위 퍼센트: {}%, 전체 포인트 상위 퍼센트: {}%", monthlyPointsComparison, totalPointsComparison);
+            
+            UserStatsResponse response = UserStatsResponse.builder()
+                    .registrationDate(registrationDate)
+                    .practiceDays(practiceDays)
+                    .monthlyCarbonComparison(monthlyCarbonComparison)
+                    .totalCarbonComparison(totalCarbonComparison)
+                    .monthlyPointsComparison(monthlyPointsComparison)
+                    .totalPointsComparison(totalPointsComparison)
+                    .monthlyGrowthRate(monthlyGrowthRate)
+                    .ecoSeedsGrowthRate(ecoSeedsGrowthRate)
+                    .averageComparison(topPercentage) // 기존 호환성을 위한 deprecated 필드
+                    .comparisonDescription(String.format("상위 %.1f%% 사용자", (double)userRanking / totalUsers * 100))
+                    .userRanking(userRanking)
+                    .totalUsers(totalUsers)
+                    .build();
+            
+            log.info("getUserStats 완료 - memberId: {}", memberId);
+            return response;
+            
+        } catch (Exception e) {
+            log.error("getUserStats 실패 - memberId: {}, error: {}", memberId, e.getMessage(), e);
+            throw e;
+        }
     }
 
     public String getRegistrationDate(Long memberId) {
@@ -74,6 +108,92 @@ public class UserStatsService {
         }
     }
 
+    // 이번달 탄소절감 기준 상위 퍼센트
+    private double calculateMonthlyTopPercentageByCarbon(Long memberId) {
+        try {
+            double userMonthlyCarbon = getUserMonthlyCarbonSaved(memberId);
+            int betterUsers = getUsersWithHigherMonthlyCarbon(userMonthlyCarbon, memberId);
+            int totalUsers = getTotalUserCount(memberId);
+            
+            if (totalUsers <= 1) return 1.0;
+            
+            // 상위 퍼센트 계산: 1등일 때는 상위 1%, 그 외에는 정상 계산
+            if (betterUsers == 0) {
+                return 1.0; // 1등은 상위 1%
+            }
+            // 상위 퍼센트 계산: 1등일 때는 상위 1%, 그 외에는 정상 계산
+            if (betterUsers == 0) {
+                return 1.0; // 1등은 상위 1%
+            }
+            double percentage = ((double)(totalUsers - betterUsers) / totalUsers) * 100;
+            return Math.max(1.0, Math.min(99.0, percentage));
+        } catch (Exception e) {
+            return 30.0;
+        }
+    }
+    
+    // 전체 탄소절감 기준 상위 퍼센트
+    private double calculateTotalTopPercentageByCarbon(Long memberId) {
+        try {
+            double userTotalCarbon = getUserTotalCarbonSaved(memberId);
+            int betterUsers = getUsersWithHigherTotalCarbon(userTotalCarbon, memberId);
+            int totalUsers = getTotalUserCount(memberId);
+            
+            if (totalUsers <= 1) return 1.0;
+            
+            // 상위 퍼센트 계산: 1등일 때는 상위 1%, 그 외에는 정상 계산
+            if (betterUsers == 0) {
+                return 1.0; // 1등은 상위 1%
+            }
+            double percentage = ((double)(totalUsers - betterUsers) / totalUsers) * 100;
+            return Math.max(1.0, Math.min(99.0, percentage));
+        } catch (Exception e) {
+            return 30.0;
+        }
+    }
+    
+    // 이번달 원큐씨앗 기준 상위 퍼센트
+    private double calculateMonthlyTopPercentageByPoints(Long memberId) {
+        try {
+            double userMonthlyPoints = getUserMonthlyPoints(memberId);
+            int betterUsers = getUsersWithHigherMonthlyPoints(userMonthlyPoints, memberId);
+            int totalUsers = getTotalUserCount(memberId);
+            
+            if (totalUsers <= 1) return 1.0;
+            
+            // 상위 퍼센트 계산: 1등일 때는 상위 1%, 그 외에는 정상 계산
+            if (betterUsers == 0) {
+                return 1.0; // 1등은 상위 1%
+            }
+            double percentage = ((double)(totalUsers - betterUsers) / totalUsers) * 100;
+            return Math.max(1.0, Math.min(99.0, percentage));
+        } catch (Exception e) {
+            return 30.0;
+        }
+    }
+    
+    // 전체 원큐씨앗 기준 상위 퍼센트
+    private double calculateTotalTopPercentageByPoints(Long memberId) {
+        try {
+            double userTotalPoints = getUserTotalPoints(memberId);
+            int betterUsers = getUsersWithHigherTotalPoints(userTotalPoints, memberId);
+            int totalUsers = getTotalUserCount(memberId);
+            
+            if (totalUsers <= 1) return 1.0;
+            
+            // 상위 퍼센트 계산: 1등일 때는 상위 1%, 그 외에는 정상 계산
+            if (betterUsers == 0) {
+                return 1.0; // 1등은 상위 1%
+            }
+            double percentage = ((double)(totalUsers - betterUsers) / totalUsers) * 100;
+            return Math.max(1.0, Math.min(99.0, percentage));
+        } catch (Exception e) {
+            return 30.0;
+        }
+    }
+
+    // 기존 메서드 (deprecated)
+    @Deprecated
     private double calculateTopPercentage(Long memberId) {
         try {
             // 1. 현재 사용자의 총 탄소절약량 조회
@@ -109,45 +229,59 @@ public class UserStatsService {
         }
     }
 
-    private double calculateMonthlyGrowthRate(Long memberId) {
+    private Double calculateMonthlyGrowthRate(Long memberId) {
         try {
-            // 이번 달 탄소절약량
-            double currentMonth = getMonthlyCarbonSaved(memberId, LocalDate.now().getYear(), LocalDate.now().getMonthValue());
+            // 이번 달 탄소절약량 (member_profile에서 조회)
+            double currentMonth = getCurrentMonthCarbonFromProfile(memberId);
 
-            // 지난 달 탄소절약량
+            // 지난 달 탄소절약량 (eco_reports에서 조회)
             LocalDate lastMonth = LocalDate.now().minusMonths(1);
-            double lastMonthCarbon = getMonthlyCarbonSaved(memberId, lastMonth.getYear(), lastMonth.getMonthValue());
+            
+            double lastMonthCarbon = getLastMonthCarbonFromEcoReport(memberId, lastMonth.getYear(), lastMonth.getMonthValue());
+           
+            // 지난달 리포트가 없으면 null 반환
+            if (lastMonthCarbon == -1.0) {
+                log.debug("지난달 리포트가 없음 - null 반환");
+                return null;
+            }
 
             if (lastMonthCarbon == 0) {
                 double result = currentMonth > 0 ? 100.0 : 0.0;
+                log.debug("지난달 탄소절약량이 0 - 증감률: {}", result);
                 return result;
             }
             
             double growthRate = ((currentMonth - lastMonthCarbon) / lastMonthCarbon) * 100;
+            log.debug("계산된 증감률: {}", growthRate);
             return growthRate;
         } catch (Exception e) {
-            return 12.0;
+            log.error("calculateMonthlyGrowthRate 에러: {}", e.getMessage(), e);
+            return null; // 오류 시 null 반환
         }
     }
 
-    private double calculateEcoSeedsGrowthRate(Long memberId) {
+    private Double calculateEcoSeedsGrowthRate(Long memberId) {
         try {
-            // 이번 달 원큐씨앗
-            double currentSeeds = getCurrentEcoSeeds(memberId);
+            // 이번 달 원큐씨앗 (member_profile에서 조회)
+            double currentSeeds = getUserMonthlyPoints(memberId);
             
-            // 지난 달 원큐씨앗
+            // 지난 달 원큐씨앗 (eco_reports에서 조회)
             LocalDate lastMonth = LocalDate.now().minusMonths(1);
             double lastMonthSeeds = getLastMonthEcoSeeds(memberId, lastMonth.getYear(), lastMonth.getMonthValue());
 
+            // 지난달 리포트가 없으면 null 반환
+            if (lastMonthSeeds == -1.0) {
+                return null;
+            }
+
             if (lastMonthSeeds == 0) {
-                double result = currentSeeds > 0 ? 100.0 : 0.0;
-                return result;
+                return currentSeeds > 0 ? 100.0 : 0.0;
             }
             
             double growthRate = ((currentSeeds - lastMonthSeeds) / lastMonthSeeds) * 100;
             return growthRate;
         } catch (Exception e) {
-            return 15.0;
+            return null; // 오류 시 null 반환
         }
     }
 
@@ -175,10 +309,10 @@ public class UserStatsService {
                 Long totalSeeds = ecoReport.get().getTotalSeeds();
                 return totalSeeds != null ? totalSeeds.doubleValue() : 0.0;
             } else {
-                return 0.0;
+                return -1.0; // 지난달 리포트가 없으면 -1 반환
             }
         } catch (Exception e) {
-            return 0.0;
+            return -1.0; // 오류 시 -1 반환
         }
     }
 
@@ -204,25 +338,25 @@ public class UserStatsService {
         try {
             
             var profile = memberProfileRepository.findByMember_MemberId(memberId);
-            System.out.println("MemberProfile 조회 결과: " + (profile.isPresent() ? "존재함" : "없음"));
+            log.debug("MemberProfile 조회 결과: {}", profile.isPresent() ? "존재함" : "없음");
             
             if (profile.isPresent()) {
                 Double totalCarbon = profile.get().getTotalCarbonSaved();
-                System.out.println("totalCarbonSaved 값: " + totalCarbon);
+                log.debug("totalCarbonSaved 값: {}", totalCarbon);
                 return totalCarbon != null ? totalCarbon : 0.0;
             } else {
-                System.out.println("MemberProfile이 없음 - 0.0 반환");
+                log.debug("MemberProfile이 없음 - 0.0 반환");
                 return 0.0;
             }
         } catch (Exception e) {
-            System.out.println("getUserTotalCarbonSaved 에러: " + e.getMessage());
+            log.error("getUserTotalCarbonSaved 에러: {}", e.getMessage(), e);
             return 18.2; // 기본값
         }
     }
 
     private int getUsersWithHigherCarbonSaved(double userCarbonSaved, Long currentMemberId) {
         try {
-            System.out.println("getUsersWithHigherCarbonSaved 호출 - userCarbonSaved: " + userCarbonSaved + ", currentMemberId: " + currentMemberId);
+            log.debug("getUsersWithHigherCarbonSaved 호출 - userCarbonSaved: {}, currentMemberId: {}", userCarbonSaved, currentMemberId);
             
             // member_profiles에서 현재 사용자보다 높은 탄소절약량을 가진 사용자 수 조회
             List<MemberProfile> allProfiles = memberProfileRepository.findAll();
@@ -235,10 +369,10 @@ public class UserStatsService {
                 }
             }
             
-            System.out.println("실제 DB에서 조회한 더 높은 탄소절약량 사용자 수: " + betterUsers);
+            log.debug("실제 DB에서 조회한 더 높은 탄소절약량 사용자 수: {}", betterUsers);
             return betterUsers;
         } catch (Exception e) {
-            System.out.println("getUsersWithHigherCarbonSaved 에러: " + e.getMessage());
+            log.error("getUsersWithHigherCarbonSaved 에러: {}", e.getMessage(), e);
             return 300;
         }
     }
@@ -246,21 +380,17 @@ public class UserStatsService {
 
     private int getTotalUserCount(Long currentMemberId) {
         try {
-            System.out.println("🔍 getTotalUserCount 호출 - currentMemberId: " + currentMemberId);
-            
             // member_profiles에서 실제 사용자 수 조회
             long totalUsers = memberProfileRepository.count();
-            System.out.println("실제 DB에서 조회한 전체 사용자 수: " + totalUsers);
             return (int) totalUsers;
         } catch (Exception e) {
-            System.out.println("getTotalUserCount 에러: " + e.getMessage());
             return 1000;
         }
     }
 
     private double getAverageCarbonSaved(Long currentMemberId) {
         try {
-            System.out.println("getAverageCarbonSaved 호출 - currentMemberId: " + currentMemberId);
+            log.debug("getAverageCarbonSaved 호출 - currentMemberId: {}", currentMemberId);
             
             // member_profiles에서 모든 사용자의 탄소절약량 조회하여 평균 계산
             List<MemberProfile> allProfiles = memberProfileRepository.findAll();
@@ -275,10 +405,10 @@ public class UserStatsService {
             }
             
             double average = validProfiles > 0 ? totalCarbon / validProfiles : 0.0;
-            System.out.println("실제 DB에서 조회한 평균 탄소절약량: " + average);
+            log.debug("실제 DB에서 조회한 평균 탄소절약량: {}", average);
             return average;
         } catch (Exception e) {
-            System.out.println("getAverageCarbonSaved 에러: " + e.getMessage());
+            log.error("getAverageCarbonSaved 에러: {}", e.getMessage(), e);
             return 12.5;
         }
     }
@@ -331,6 +461,114 @@ public class UserStatsService {
             }
         } catch (Exception e) {
             return -1.0;
+        }
+    }
+
+    // 새로운 헬퍼 메서드들
+    private double getUserMonthlyCarbonSaved(Long memberId) {
+        try {
+            var profile = memberProfileRepository.findByMember_MemberId(memberId);
+            if (profile.isPresent()) {
+                Double currentMonthCarbon = profile.get().getCurrentMonthCarbonSaved();
+                return currentMonthCarbon != null ? currentMonthCarbon : 0.0;
+            }
+            return 0.0;
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+
+    private double getUserMonthlyPoints(Long memberId) {
+        try {
+            var profile = memberProfileRepository.findByMember_MemberId(memberId);
+            if (profile.isPresent()) {
+                Long currentMonthPoints = profile.get().getCurrentMonthPoints();
+                return currentMonthPoints != null ? currentMonthPoints.doubleValue() : 0.0;
+            }
+            return 0.0;
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+
+    private double getUserTotalPoints(Long memberId) {
+        try {
+            var profile = memberProfileRepository.findByMember_MemberId(memberId);
+            if (profile.isPresent()) {
+                Long currentPoints = profile.get().getCurrentPoints();
+                return currentPoints != null ? currentPoints.doubleValue() : 0.0;
+            }
+            return 0.0;
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+
+    private int getUsersWithHigherMonthlyCarbon(double userMonthlyCarbon, Long currentMemberId) {
+        try {
+            List<MemberProfile> allProfiles = memberProfileRepository.findAll();
+            int betterUsers = 0;
+            
+            for (MemberProfile profile : allProfiles) {
+                if (profile.getCurrentMonthCarbonSaved() != null && 
+                    profile.getCurrentMonthCarbonSaved() > userMonthlyCarbon) {
+                    betterUsers++;
+                }
+            }
+            return betterUsers;
+        } catch (Exception e) {
+            return 300;
+        }
+    }
+
+    private int getUsersWithHigherTotalCarbon(double userTotalCarbon, Long currentMemberId) {
+        try {
+            List<MemberProfile> allProfiles = memberProfileRepository.findAll();
+            int betterUsers = 0;
+            
+            for (MemberProfile profile : allProfiles) {
+                if (profile.getTotalCarbonSaved() != null && 
+                    profile.getTotalCarbonSaved() > userTotalCarbon) {
+                    betterUsers++;
+                }
+            }
+            return betterUsers;
+        } catch (Exception e) {
+            return 300;
+        }
+    }
+
+    private int getUsersWithHigherMonthlyPoints(double userMonthlyPoints, Long currentMemberId) {
+        try {
+            List<MemberProfile> allProfiles = memberProfileRepository.findAll();
+            int betterUsers = 0;
+            
+            for (MemberProfile profile : allProfiles) {
+                if (profile.getCurrentMonthPoints() != null && 
+                    profile.getCurrentMonthPoints() > userMonthlyPoints) {
+                    betterUsers++;
+                }
+            }
+            return betterUsers;
+        } catch (Exception e) {
+            return 300;
+        }
+    }
+
+    private int getUsersWithHigherTotalPoints(double userTotalPoints, Long currentMemberId) {
+        try {
+            List<MemberProfile> allProfiles = memberProfileRepository.findAll();
+            int betterUsers = 0;
+            
+            for (MemberProfile profile : allProfiles) {
+                if (profile.getCurrentPoints() != null && 
+                    profile.getCurrentPoints() > userTotalPoints) {
+                    betterUsers++;
+                }
+            }
+            return betterUsers;
+        } catch (Exception e) {
+            return 300;
         }
     }
 

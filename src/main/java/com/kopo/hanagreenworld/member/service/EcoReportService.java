@@ -355,7 +355,13 @@ public class EcoReportService {
             // 랭킹 계산
             long rank = betterUsers + 1; // 현재 사용자보다 높은 사용자 수 + 1
             long averagePoints = totalUsers > 0 ? totalPoints / totalUsers : 0;
-            int percentile = totalUsers > 0 ? (int) Math.round((double) betterUsers / totalUsers * 100) : 0;
+            // 상위 퍼센트 계산: 1등일 때는 상위 1%, 그 외에는 정상 계산
+            int percentile;
+            if (betterUsers == 0) {
+                percentile = 1; // 1등은 상위 1%
+            } else {
+                percentile = totalUsers > 0 ? (int) Math.round((double) (totalUsers - betterUsers) / totalUsers * 100) : 0;
+            }
             
             userRanking.put("percentile", percentile);
             userRanking.put("totalUsers", totalUsers);
